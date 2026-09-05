@@ -16,710 +16,525 @@ HTML = """
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="MedLens AI clinical information structuring tool">
-<title>MedLens — AI Clinical Intelligence</title>
+<title>MedLens — Clinical Intelligence</title>
 
 <style>
 *{box-sizing:border-box}
 
 :root{
-    --bg:#03040d;
-    --panel:#071020;
-    --panel2:#0a1529;
-    --line:rgba(83,221,255,.20);
-    --text:#f1f7ff;
-    --muted:#8da3bd;
-    --cyan:#25e7ff;
-    --blue:#4d8dff;
-    --violet:#a855f7;
-    --purple:#7c3aed;
-    --green:#39f2ae;
-    --yellow:#ffd166;
-    --red:#ff5577;
-    --shadow:0 25px 80px rgba(0,0,0,.45)
+ --bg:#050505;
+ --panel:#0d0d11;
+ --panel2:#121218;
+ --text:#f4f4f5;
+ --muted:#92929d;
+ --lime:#c8ff00;
+ --pink:#ff2bd6;
+ --violet:#9b5cff;
+ --yellow:#ffb800;
+ --red:#ff416d;
+ --line:rgba(200,255,0,.16);
 }
 
 html{scroll-behavior:smooth}
 
 body{
-    margin:0;
-    font-family:Inter,"Segoe UI",Arial,sans-serif;
-    color:var(--text);
-    background:
-        radial-gradient(circle at 8% 8%,rgba(37,231,255,.13),transparent 24%),
-        radial-gradient(circle at 92% 12%,rgba(168,85,247,.16),transparent 25%),
-        radial-gradient(circle at 50% 95%,rgba(77,141,255,.12),transparent 35%),
-        var(--bg);
-    min-height:100vh;
-    overflow-x:hidden
+ margin:0;
+ color:var(--text);
+ font-family:Inter,"Segoe UI",Arial,sans-serif;
+ background:
+ radial-gradient(circle at 8% 4%,rgba(200,255,0,.09),transparent 23%),
+ radial-gradient(circle at 92% 8%,rgba(255,43,214,.11),transparent 25%),
+ radial-gradient(circle at 50% 100%,rgba(155,92,255,.09),transparent 35%),
+ var(--bg);
+ min-height:100vh;
+ overflow-x:hidden;
 }
 
 body:before{
-    content:"";
-    position:fixed;
-    inset:0;
-    pointer-events:none;
-    background-image:
-        linear-gradient(rgba(100,180,255,.025) 1px,transparent 1px),
-        linear-gradient(90deg,rgba(100,180,255,.025) 1px,transparent 1px);
-    background-size:40px 40px;
-    mask-image:linear-gradient(to bottom,black,transparent 92%)
-}
-
-body:after{
-    content:"";
-    position:fixed;
-    width:420px;
-    height:420px;
-    right:-180px;
-    top:280px;
-    border-radius:50%;
-    border:1px solid rgba(168,85,247,.12);
-    box-shadow:
-        0 0 100px rgba(168,85,247,.08),
-        inset 0 0 100px rgba(37,231,255,.05);
-    pointer-events:none
+ content:"";
+ position:fixed;
+ inset:0;
+ pointer-events:none;
+ background-image:
+ linear-gradient(rgba(200,255,0,.022) 1px,transparent 1px),
+ linear-gradient(90deg,rgba(255,43,214,.018) 1px,transparent 1px);
+ background-size:42px 42px;
+ mask-image:linear-gradient(to bottom,black,transparent 90%);
 }
 
 .header{
-    position:relative;
-    border-bottom:1px solid rgba(83,221,255,.14);
-    padding:22px 20px 24px;
-    background:rgba(3,6,18,.78);
-    backdrop-filter:blur(22px);
-    z-index:2
+ position:relative;
+ z-index:2;
+ border-bottom:1px solid rgba(200,255,0,.13);
+ background:rgba(5,5,5,.9);
+ backdrop-filter:blur(20px);
+ padding:22px 20px;
+}
+
+.header-inner,.container,.hero{
+ max-width:1160px;
+ margin:auto;
 }
 
 .header-inner{
-    max-width:1160px;
-    margin:auto;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:20px
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ gap:20px;
 }
 
-.brand{
-    display:flex;
-    align-items:center;
-    gap:14px
-}
+.brand{display:flex;align-items:center;gap:14px}
 
 .logo{
-    width:56px;
-    height:56px;
-    display:grid;
-    place-items:center;
-    border-radius:18px;
-    background:
-        linear-gradient(135deg,rgba(37,231,255,.16),rgba(168,85,247,.20));
-    border:1px solid rgba(37,231,255,.40);
-    box-shadow:
-        0 0 35px rgba(37,231,255,.12),
-        inset 0 0 25px rgba(168,85,247,.08);
-    font-size:27px
+ width:56px;height:56px;
+ display:grid;place-items:center;
+ border-radius:17px;
+ font-size:27px;
+ background:linear-gradient(135deg,rgba(200,255,0,.12),rgba(255,43,214,.15));
+ border:1px solid rgba(200,255,0,.4);
+ box-shadow:0 0 35px rgba(200,255,0,.1);
 }
 
 h1{
-    margin:0;
-    font-size:34px;
-    letter-spacing:-1.2px;
-    line-height:1
+ margin:0;
+ font-size:34px;
+ letter-spacing:-1.5px;
 }
 
-h1 .cyan{color:var(--cyan)}
-h1 .violet{color:var(--violet)}
+h1 .lime{color:var(--lime)}
+h1 .pink{color:var(--pink)}
 
 .header p{
-    margin:7px 0 0;
-    color:var(--muted);
-    font-size:12px;
-    letter-spacing:.3px
+ margin:6px 0 0;
+ color:var(--muted);
+ font-size:11px;
+ letter-spacing:.7px;
 }
 
-.system-status{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    padding:9px 14px;
-    border-radius:30px;
-    border:1px solid rgba(57,242,174,.20);
-    background:rgba(57,242,174,.045);
-    color:var(--green);
-    font-size:10px;
-    font-weight:900;
-    letter-spacing:.7px
+.system{
+ display:flex;
+ align-items:center;
+ gap:8px;
+ padding:8px 13px;
+ border:1px solid rgba(200,255,0,.25);
+ border-radius:30px;
+ color:var(--lime);
+ background:rgba(200,255,0,.04);
+ font-size:9px;
+ font-weight:900;
+ letter-spacing:.8px;
 }
 
-.status-dot{
-    width:7px;
-    height:7px;
-    border-radius:50%;
-    background:var(--green);
-    box-shadow:0 0 12px var(--green)
+.system-dot{
+ width:7px;height:7px;border-radius:50%;
+ background:var(--lime);
+ box-shadow:0 0 14px var(--lime);
 }
 
 .hero{
-    max-width:1160px;
-    margin:0 auto;
-    padding:48px 20px 24px;
-    display:grid;
-    grid-template-columns:1fr;
-    gap:18px
+ padding:50px 20px 27px;
 }
 
-.hero-kicker{
-    display:inline-flex;
-    width:max-content;
-    align-items:center;
-    gap:8px;
-    padding:7px 12px;
-    border:1px solid rgba(168,85,247,.35);
-    border-radius:30px;
-    background:rgba(168,85,247,.07);
-    color:#c99aff;
-    font-size:10px;
-    font-weight:900;
-    letter-spacing:1px
+.kicker{
+ display:inline-block;
+ padding:7px 12px;
+ border:1px solid rgba(255,43,214,.35);
+ border-radius:30px;
+ background:rgba(255,43,214,.05);
+ color:#ff65e2;
+ font-size:9px;
+ font-weight:900;
+ letter-spacing:1px;
 }
 
 .hero h2{
-    max-width:850px;
-    margin:16px 0 8px;
-    font-size:clamp(34px,6vw,60px);
-    line-height:1.02;
-    letter-spacing:-2.4px
+ margin:16px 0 10px;
+ max-width:850px;
+ font-size:clamp(38px,6vw,62px);
+ line-height:1;
+ letter-spacing:-3px;
 }
 
 .hero h2 span{
-    background:linear-gradient(90deg,var(--cyan),#72a5ff,var(--violet));
-    -webkit-background-clip:text;
-    background-clip:text;
-    color:transparent
+ background:linear-gradient(90deg,var(--lime),var(--pink),var(--violet));
+ -webkit-background-clip:text;
+ background-clip:text;
+ color:transparent;
 }
 
-.hero-text{
-    max-width:760px;
-    margin:0;
-    color:var(--muted);
-    font-size:15px;
-    line-height:1.7
+.hero p{
+ max-width:760px;
+ margin:0;
+ color:var(--muted);
+ line-height:1.7;
+ font-size:14px;
 }
 
 .pipeline{
-    display:flex;
-    align-items:center;
-    gap:0;
-    margin-top:20px;
-    overflow-x:auto;
-    padding-bottom:4px
+ display:flex;
+ align-items:center;
+ gap:10px;
+ margin-top:22px;
+ overflow-x:auto;
+ padding-bottom:5px;
 }
 
 .step{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    white-space:nowrap;
-    color:#7189a6;
-    font-size:10px;
-    font-weight:800
+ display:flex;
+ align-items:center;
+ gap:7px;
+ white-space:nowrap;
+ color:#73737d;
+ font-size:9px;
+ font-weight:900;
 }
 
-.step-number{
-    width:27px;
-    height:27px;
-    display:grid;
-    place-items:center;
-    border-radius:50%;
-    border:1px solid rgba(83,221,255,.25);
-    background:rgba(83,221,255,.05);
-    color:var(--cyan);
-    font-size:11px
+.step b{
+ width:26px;height:26px;
+ display:grid;place-items:center;
+ border-radius:50%;
+ border:1px solid rgba(200,255,0,.3);
+ color:var(--lime);
+ background:rgba(200,255,0,.04);
 }
 
 .step-line{
-    width:45px;
-    height:1px;
-    background:linear-gradient(90deg,rgba(37,231,255,.35),rgba(168,85,247,.35));
-    margin:0 10px
+ width:45px;
+ height:1px;
+ background:linear-gradient(90deg,var(--lime),var(--pink));
+ opacity:.5;
 }
 
-.container{
-    max-width:1160px;
-    margin:0 auto;
-    padding:0 20px
-}
+.container{padding:0 20px}
 
 .card{
-    position:relative;
-    margin-bottom:20px;
-    padding:26px;
-    border-radius:22px;
-    background:
-        linear-gradient(145deg,rgba(9,22,43,.90),rgba(5,10,24,.92));
-    border:1px solid var(--line);
-    box-shadow:var(--shadow);
-    backdrop-filter:blur(20px);
-    overflow:hidden
+ position:relative;
+ overflow:hidden;
+ margin-bottom:20px;
+ padding:25px;
+ border-radius:21px;
+ border:1px solid var(--line);
+ background:linear-gradient(145deg,rgba(16,16,20,.96),rgba(7,7,9,.95));
+ box-shadow:0 25px 75px rgba(0,0,0,.58);
+ backdrop-filter:blur(18px);
 }
 
 .card:before{
-    content:"";
-    position:absolute;
-    top:0;
-    left:30px;
-    right:30px;
-    height:1px;
-    background:linear-gradient(
-        90deg,
-        transparent,
-        var(--cyan),
-        var(--violet),
-        transparent
-    );
-    opacity:.7
+ content:"";
+ position:absolute;
+ top:0;left:28px;right:28px;
+ height:1px;
+ background:linear-gradient(90deg,transparent,var(--lime),var(--pink),transparent);
+ opacity:.7;
 }
 
-.card:after{
-    content:"";
-    position:absolute;
-    width:130px;
-    height:130px;
-    right:-70px;
-    top:-70px;
-    border-radius:50%;
-    background:radial-gradient(circle,rgba(168,85,247,.10),transparent 68%);
-    pointer-events:none
+.card:hover{
+ border-color:rgba(200,255,0,.25);
 }
 
 .title{
-    display:flex;
-    align-items:center;
-    gap:12px;
-    margin-bottom:20px
+ display:flex;
+ align-items:center;
+ gap:12px;
+ margin-bottom:20px;
 }
 
 .icon{
-    width:42px;
-    height:42px;
-    display:grid;
-    place-items:center;
-    border-radius:13px;
-    background:
-        linear-gradient(135deg,rgba(37,231,255,.10),rgba(168,85,247,.13));
-    border:1px solid rgba(83,221,255,.20);
-    box-shadow:0 0 22px rgba(37,231,255,.06);
-    font-size:18px
+ width:42px;height:42px;
+ display:grid;place-items:center;
+ border-radius:13px;
+ background:linear-gradient(135deg,rgba(200,255,0,.08),rgba(255,43,214,.1));
+ border:1px solid rgba(200,255,0,.18);
+ font-size:18px;
 }
 
-h3{
-    margin:0;
-    font-size:18px
-}
-
-.sub{
-    margin-top:4px;
-    color:var(--muted);
-    font-size:12px
-}
+h3{margin:0;font-size:18px}
+.sub{margin-top:4px;color:var(--muted);font-size:11px}
 
 .grid{
-    display:grid;
-    grid-template-columns:repeat(2,1fr);
-    gap:15px
+ display:grid;
+ grid-template-columns:repeat(2,1fr);
+ gap:15px;
 }
 
 .full{grid-column:1/-1}
 
 label{
-    display:block;
-    margin-bottom:7px;
-    color:#b8cae0;
-    font-size:10px;
-    font-weight:900;
-    letter-spacing:.8px
+ display:block;
+ margin-bottom:7px;
+ color:#b7b7c0;
+ font-size:9px;
+ font-weight:900;
+ letter-spacing:.8px;
 }
 
 input,textarea,select{
-    width:100%;
-    padding:13px 14px;
-    border:1px solid rgba(126,166,210,.16);
-    border-radius:12px;
-    outline:none;
-    background:rgba(1,7,18,.72);
-    color:var(--text);
-    font-size:13px;
-    transition:.2s
+ width:100%;
+ padding:13px;
+ border-radius:11px;
+ border:1px solid rgba(255,255,255,.1);
+ outline:none;
+ background:#08080a;
+ color:var(--text);
+ font-size:13px;
 }
 
-input::placeholder,
-textarea::placeholder{
-    color:#526981
+input::placeholder,textarea::placeholder{color:#50505a}
+
+input:focus,textarea:focus,select:focus{
+ border-color:rgba(200,255,0,.7);
+ box-shadow:0 0 0 3px rgba(200,255,0,.05),0 0 25px rgba(200,255,0,.06);
 }
 
-input:focus,
-textarea:focus,
-select:focus{
-    border-color:rgba(37,231,255,.60);
-    box-shadow:
-        0 0 0 3px rgba(37,231,255,.07),
-        0 0 25px rgba(37,231,255,.05)
+input:focus-visible,textarea:focus-visible,select:focus-visible,
+button:focus-visible,.file-label:focus-visible{
+ outline:2px solid var(--lime);
+ outline-offset:3px;
 }
 
-input:focus-visible,
-textarea:focus-visible,
-select:focus-visible,
-button:focus-visible,
-.file-label:focus-visible{
-    outline:2px solid var(--cyan);
-    outline-offset:3px
-}
-
-select option{background:#081326}
-
-textarea{
-    min-height:78px;
-    resize:vertical
-}
+textarea{min-height:78px;resize:vertical}
+select option{background:#111}
 
 .upload{
-    padding:34px 20px;
-    text-align:center;
-    border:1px dashed rgba(37,231,255,.42);
-    border-radius:17px;
-    background:
-        radial-gradient(circle at 50% 30%,rgba(37,231,255,.08),transparent 45%),
-        radial-gradient(circle at 70% 90%,rgba(168,85,247,.07),transparent 45%),
-        rgba(2,8,19,.55);
-    transition:.25s
+ padding:35px 20px;
+ text-align:center;
+ border:1px dashed rgba(200,255,0,.4);
+ border-radius:17px;
+ background:
+ radial-gradient(circle at 50% 20%,rgba(200,255,0,.07),transparent 45%),
+ rgba(5,5,7,.7);
+ transition:.2s;
 }
 
 .upload:hover{
-    border-color:rgba(168,85,247,.65);
-    box-shadow:inset 0 0 35px rgba(37,231,255,.035)
+ border-color:var(--pink);
+ box-shadow:inset 0 0 40px rgba(255,43,214,.035);
 }
 
 .upload-icon{
-    width:62px;
-    height:62px;
-    margin:0 auto 12px;
-    display:grid;
-    place-items:center;
-    border-radius:20px;
-    background:linear-gradient(135deg,rgba(37,231,255,.12),rgba(168,85,247,.14));
-    border:1px solid rgba(83,221,255,.22);
-    font-size:27px
+ width:62px;height:62px;
+ margin:auto auto 12px;
+ display:grid;place-items:center;
+ border-radius:19px;
+ background:linear-gradient(135deg,rgba(200,255,0,.1),rgba(255,43,214,.12));
+ border:1px solid rgba(200,255,0,.2);
+ font-size:26px;
 }
 
-.upload strong{
-    display:block;
-    font-size:15px
-}
-
-.upload p{
-    margin:6px 0;
-    color:var(--muted);
-    font-size:12px
-}
-
-.upload small{
-    color:#607996
-}
+.upload strong{display:block;font-size:15px}
+.upload p{margin:6px 0;color:var(--muted);font-size:12px}
+.upload small{color:#62626c}
 
 #report{
-    display:block;
-    width:100%;
-    margin-top:13px;
-    padding:7px
+ display:block;
+ width:100%;
+ margin-top:12px;
+ padding:7px;
 }
 
 .file-label{
-    display:inline-block;
-    margin-top:10px;
-    padding:10px 17px;
-    border:1px solid rgba(168,85,247,.45);
-    border-radius:10px;
-    color:#cda7ff;
-    background:rgba(168,85,247,.055);
-    cursor:pointer;
-    font-size:12px;
-    font-weight:800;
-    transition:.2s
+ display:inline-block;
+ margin-top:10px;
+ padding:10px 17px;
+ border-radius:10px;
+ border:1px solid rgba(255,43,214,.4);
+ color:#ff65e2;
+ background:rgba(255,43,214,.045);
+ cursor:pointer;
+ font-size:11px;
+ font-weight:900;
 }
 
 .file-label:hover{
-    border-color:var(--violet);
-    background:rgba(168,85,247,.10);
-    box-shadow:0 0 25px rgba(168,85,247,.10)
+ border-color:var(--pink);
+ box-shadow:0 0 25px rgba(255,43,214,.1);
 }
 
-.primary-button{
-    width:100%;
-    margin-top:18px;
-    padding:16px 22px;
-    border:1px solid rgba(37,231,255,.50);
-    border-radius:13px;
-    color:white;
-    background:
-        linear-gradient(100deg,#00bfe8,#526cff,#a63ff0);
-    background-size:180% 100%;
-    font-size:14px;
-    font-weight:900;
-    letter-spacing:.2px;
-    cursor:pointer;
-    box-shadow:
-        0 10px 35px rgba(37,231,255,.12),
-        0 10px 35px rgba(168,85,247,.12);
-    transition:.25s
+.primary{
+ width:100%;
+ margin-top:18px;
+ padding:16px;
+ border:1px solid rgba(200,255,0,.5);
+ border-radius:12px;
+ color:#050505;
+ background:linear-gradient(100deg,#b7ee00,#c8ff00,#ff2bd6,#9b5cff);
+ background-size:220% 100%;
+ font-size:13px;
+ font-weight:900;
+ cursor:pointer;
+ transition:.25s;
+ box-shadow:0 10px 35px rgba(200,255,0,.1);
 }
 
-.primary-button:hover{
-    transform:translateY(-2px);
-    background-position:100% 0;
-    box-shadow:
-        0 15px 40px rgba(37,231,255,.18),
-        0 15px 40px rgba(168,85,247,.18)
+.primary:hover{
+ background-position:100% 0;
+ transform:translateY(-2px);
+ box-shadow:0 15px 45px rgba(255,43,214,.14);
 }
 
-.primary-button:disabled{
-    opacity:.55;
-    cursor:wait;
-    transform:none
-}
+.primary:disabled{opacity:.55;cursor:wait;transform:none}
 
 .status{
-    min-height:20px;
-    margin-top:13px;
-    text-align:center;
-    color:var(--cyan);
-    font-size:12px
+ min-height:20px;
+ margin-top:12px;
+ text-align:center;
+ color:var(--lime);
+ font-size:11px;
 }
 
 .status.error{color:var(--red)}
 
 .results-head{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:15px;
-    margin:32px 0 15px
+ display:flex;
+ justify-content:space-between;
+ margin:30px 0 13px;
+ color:#71717b;
+ font-size:9px;
+ font-weight:900;
+ letter-spacing:1px;
 }
 
-.results-label{
-    color:#7189a6;
-    font-size:10px;
-    font-weight:900;
-    letter-spacing:1.2px
-}
-
-.results-label span{
-    color:var(--cyan)
-}
+.results-head span{color:var(--lime)}
 
 .table-wrap{
-    overflow-x:auto;
-    border:1px solid rgba(83,221,255,.14);
-    border-radius:14px
+ overflow-x:auto;
+ border:1px solid rgba(200,255,0,.12);
+ border-radius:13px;
 }
 
 table{
-    width:100%;
-    min-width:940px;
-    border-collapse:collapse
+ width:100%;
+ min-width:960px;
+ border-collapse:collapse;
 }
 
 caption{
-    text-align:left;
-    padding:11px;
-    color:var(--muted);
-    font-size:11px
+ padding:10px;
+ text-align:left;
+ color:var(--muted);
+ font-size:10px;
 }
 
 th,td{
-    padding:12px;
-    border-bottom:1px solid rgba(110,180,255,.08);
-    text-align:left;
-    vertical-align:top;
-    font-size:12px
+ padding:12px;
+ text-align:left;
+ vertical-align:top;
+ border-bottom:1px solid rgba(255,255,255,.06);
+ font-size:11px;
 }
 
 th{
-    background:rgba(37,231,255,.045);
-    color:#94b4d4;
-    font-size:9px;
-    text-transform:uppercase;
-    letter-spacing:.7px
+ background:rgba(200,255,0,.035);
+ color:#b7d878;
+ font-size:9px;
+ text-transform:uppercase;
+ letter-spacing:.6px;
 }
 
-td{color:#d8e6f5}
+td{color:#d7d7df}
 
-tr:hover td{
-    background:rgba(37,231,255,.025)
-}
+tr:hover td{background:rgba(200,255,0,.018)}
 
 .badge{
-    display:inline-block;
-    min-width:65px;
-    padding:5px 9px;
-    text-align:center;
-    border-radius:20px;
-    font-size:9px;
-    font-weight:900;
-    letter-spacing:.5px
-}
-
-.low{
-    background:rgba(255,209,102,.10);
-    color:var(--yellow);
-    border:1px solid rgba(255,209,102,.20)
+ display:inline-block;
+ min-width:62px;
+ padding:5px 8px;
+ text-align:center;
+ border-radius:20px;
+ font-size:8px;
+ font-weight:900;
+ letter-spacing:.5px;
 }
 
 .normal{
-    background:rgba(57,242,174,.09);
-    color:var(--green);
-    border:1px solid rgba(57,242,174,.20)
+ color:var(--lime);
+ background:rgba(200,255,0,.07);
+ border:1px solid rgba(200,255,0,.22);
+}
+
+.low{
+ color:var(--yellow);
+ background:rgba(255,184,0,.08);
+ border:1px solid rgba(255,184,0,.2);
 }
 
 .high{
-    background:rgba(255,85,119,.10);
-    color:var(--red);
-    border:1px solid rgba(255,85,119,.22)
+ color:#ff5278;
+ background:rgba(255,65,109,.08);
+ border:1px solid rgba(255,65,109,.22);
 }
 
 .unknown{
-    background:rgba(130,155,185,.08);
-    color:#a5b5c8;
-    border:1px solid rgba(130,155,185,.16)
+ color:#aaaab2;
+ background:rgba(150,150,160,.06);
+ border:1px solid rgba(150,150,160,.14);
 }
 
-.dashboard-grid{
-    display:grid;
-    grid-template-columns:1.55fr .75fr;
-    gap:20px
-}
-
-.conflict{
-    padding:13px;
-    margin:8px 0;
-    border-radius:11px;
-    background:rgba(255,190,70,.055);
-    border:1px solid rgba(255,190,70,.18);
-    border-left:3px solid var(--yellow);
-    color:#e7d8ac;
-    font-size:12px;
-    line-height:1.55
+.dashboard{
+ display:grid;
+ grid-template-columns:1.5fr .8fr;
+ gap:20px;
 }
 
 .summary{
-    padding:18px;
-    border-radius:13px;
-    background:
-        linear-gradient(135deg,rgba(37,231,255,.045),rgba(168,85,247,.06));
-    border:1px solid rgba(83,221,255,.12);
-    line-height:1.7;
-    color:#d8e8f8;
-    font-size:13px
+ padding:18px;
+ border-radius:13px;
+ line-height:1.7;
+ color:#d8d8df;
+ font-size:12px;
+ background:linear-gradient(135deg,rgba(200,255,0,.035),rgba(255,43,214,.045));
+ border:1px solid rgba(200,255,0,.12);
+}
+
+.conflict{
+ padding:13px;
+ margin:8px 0;
+ border-radius:10px;
+ border:1px solid rgba(255,184,0,.18);
+ border-left:3px solid var(--yellow);
+ background:rgba(255,184,0,.045);
+ color:#dfd0a7;
+ font-size:11px;
+ line-height:1.55;
 }
 
 .notice{
-    padding:17px;
-    border-radius:12px;
-    background:
-        linear-gradient(135deg,rgba(57,242,174,.035),rgba(37,231,255,.035));
-    border:1px solid rgba(57,242,174,.13);
-    border-left:3px solid var(--green);
-    line-height:1.65;
-    color:#c9d8e8;
-    font-size:12px
+ padding:17px;
+ border-radius:12px;
+ border:1px solid rgba(200,255,0,.13);
+ border-left:3px solid var(--lime);
+ background:linear-gradient(135deg,rgba(200,255,0,.035),rgba(155,92,255,.035));
+ color:#c9c9d1;
+ line-height:1.65;
+ font-size:11px;
 }
 
-.notice strong{
-    color:var(--green)
-}
+.notice strong{color:var(--lime)}
 
-.empty{
-    color:#738ba5;
-    padding:10px 0;
-    font-size:12px
-}
-
-.metric{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:9px 0;
-    border-bottom:1px solid rgba(100,170,220,.08);
-    color:#7890a9;
-    font-size:11px
-}
-
-.metric strong{
-    color:#dcecff
-}
+.empty{color:#686873;padding:10px 0;font-size:11px}
 
 .footer{
-    text-align:center;
-    color:#4d637d;
-    font-size:10px;
-    padding:18px 0 38px;
-    letter-spacing:.3px
+ padding:18px 0 38px;
+ text-align:center;
+ color:#4d4d56;
+ font-size:9px;
 }
 
-.footer span{
-    color:var(--violet)
-}
-
-.sr-only{
-    position:absolute;
-    width:1px;
-    height:1px;
-    padding:0;
-    margin:-1px;
-    overflow:hidden;
-    clip:rect(0,0,0,0);
-    white-space:nowrap;
-    border:0
-}
+.footer span{color:var(--pink)}
 
 @media(max-width:850px){
-    .dashboard-grid{
-        grid-template-columns:1fr
-    }
+ .dashboard{grid-template-columns:1fr}
 }
 
 @media(max-width:700px){
-    .grid{
-        grid-template-columns:1fr
-    }
-
-    .full{
-        grid-column:auto
-    }
-
-    .header-inner{
-        align-items:flex-start
-    }
-
-    .system-status{
-        display:none
-    }
-
-    .hero{
-        padding-top:32px
-    }
-
-    .hero h2{
-        font-size:38px
-    }
-
-    .card{
-        padding:20px
-    }
-
-    .step-line{
-        width:25px
-    }
+ .grid{grid-template-columns:1fr}
+ .full{grid-column:auto}
+ .system{display:none}
+ .hero{padding-top:35px}
+ .hero h2{font-size:40px}
+ .card{padding:20px}
 }
 </style>
 </head>
@@ -731,15 +546,14 @@ tr:hover td{
 
 <div class="brand">
 <div class="logo" aria-hidden="true">🧬</div>
-
 <div>
-<h1><span class="cyan">Med</span><span class="violet">Lens</span></h1>
+<h1><span class="lime">Med</span><span class="pink">Lens</span></h1>
 <p>AI CLINICAL INFORMATION INTELLIGENCE</p>
 </div>
 </div>
 
-<div class="system-status">
-<span class="status-dot" aria-hidden="true"></span>
+<div class="system">
+<span class="system-dot"></span>
 AI SYSTEM ONLINE
 </div>
 
@@ -749,52 +563,34 @@ AI SYSTEM ONLINE
 
 <section class="hero">
 
-<div>
-<div class="hero-kicker">◈ MULTIMODAL AI · STRUCTURED CLINICAL DATA</div>
+<div class="kicker">◈ MULTIMODAL AI · STRUCTURED CLINICAL DATA</div>
 
 <h2>
 Your reports.<br>
 <span>Structured intelligence.</span>
 </h2>
 
-<p class="hero-text">
+<p>
 Transform medical reports into structured, reviewable information
 with reference-aware extraction, conflict detection and
 patient-friendly summaries — while keeping human verification
 at the center.
 </p>
 
-<div class="pipeline" aria-label="MedLens processing workflow">
+<div class="pipeline" aria-label="Processing workflow">
 
-<div class="step">
-<span class="step-number">01</span>
-PATIENT
-</div>
-
+<div class="step"><b>01</b>PATIENT</div>
 <div class="step-line"></div>
 
-<div class="step">
-<span class="step-number">02</span>
-REPORT
-</div>
-
+<div class="step"><b>02</b>REPORT</div>
 <div class="step-line"></div>
 
-<div class="step">
-<span class="step-number">03</span>
-AI EXTRACT
-</div>
-
+<div class="step"><b>03</b>AI EXTRACT</div>
 <div class="step-line"></div>
 
-<div class="step">
-<span class="step-number">04</span>
-REVIEW
-</div>
+<div class="step"><b>04</b>REVIEW</div>
 
 </div>
-</div>
-
 </section>
 
 
@@ -803,103 +599,69 @@ REVIEW
 <section class="card" aria-labelledby="patient-heading">
 
 <div class="title">
-
 <div class="icon" aria-hidden="true">👤</div>
-
 <div>
 <h3 id="patient-heading">Patient Information</h3>
 <div class="sub">Optional context supplied by the user</div>
 </div>
-
 </div>
-
 
 <div class="grid">
 
 <div>
 <label for="age">AGE</label>
-<input
-id="age"
-name="age"
-type="number"
-min="0"
-max="150"
-placeholder="e.g. 21"
-autocomplete="off">
+<input id="age" type="number" min="0" max="150"
+placeholder="e.g. 21" autocomplete="off">
 </div>
-
 
 <div>
 <label for="sex">SEX</label>
-
-<select id="sex" name="sex">
+<select id="sex">
 <option value="">Select</option>
 <option>Male</option>
 <option>Female</option>
 <option>Other</option>
 <option>Prefer not to say</option>
 </select>
-
 </div>
-
 
 <div class="full">
 <label for="symptoms">SYMPTOMS</label>
-
-<textarea
-id="symptoms"
-name="symptoms"
+<textarea id="symptoms"
 placeholder="Enter patient-reported symptoms"></textarea>
 </div>
 
-
 <div>
 <label for="conditions">KNOWN CONDITIONS</label>
-
-<textarea
-id="conditions"
-name="conditions"
+<textarea id="conditions"
 placeholder="Existing conditions"></textarea>
 </div>
 
-
 <div>
 <label for="allergies">ALLERGIES</label>
-
-<textarea
-id="allergies"
-name="allergies"
+<textarea id="allergies"
 placeholder="Known allergies"></textarea>
 </div>
 
-
 <div class="full">
 <label for="medications">CURRENT MEDICATIONS</label>
-
-<textarea
-id="medications"
-name="medications"
+<textarea id="medications"
 placeholder="Current medications"></textarea>
 </div>
 
 </div>
-
 </section>
 
 
 <section class="card" aria-labelledby="report-heading">
 
 <div class="title">
-
 <div class="icon" aria-hidden="true">📄</div>
-
 <div>
 <h3 id="report-heading">Medical Report</h3>
 <div class="sub">Upload a source document for multimodal AI processing</div>
 </div>
-
 </div>
-
 
 <div class="upload">
 
@@ -909,44 +671,35 @@ placeholder="Current medications"></textarea>
 
 <p>PDF · JPG · PNG · WEBP</p>
 
-<small id="report-help">
-Maximum file size: 8 MB
-</small>
-
+<small id="report-help">Maximum file size: 8 MB</small>
 
 <label for="report" class="file-label">
 Choose medical report
 </label>
 
-<input
-id="report"
-name="report"
+<input id="report"
 type="file"
 accept=".pdf,.jpg,.jpeg,.png,.webp"
 aria-describedby="report-help">
 
 </div>
 
-
 <button
 id="processBtn"
-class="primary-button"
+class="primary"
 type="button"
 onclick="processReport()"
 aria-describedby="status">
 
-⚡ Process Medical Report
+⚡ PROCESS MEDICAL REPORT
 
 </button>
 
-
-<div
-id="status"
+<div id="status"
 class="status"
 role="status"
 aria-live="polite"
-aria-atomic="true">
-</div>
+aria-atomic="true"></div>
 
 </section>
 
@@ -964,392 +717,302 @@ aria-atomic="true">
 <script>
 
 function escapeHTML(value){
-
-if(value===null || value===undefined){
-return "";
-}
-
-return String(value)
-.replace(/&/g,"&amp;")
-.replace(/</g,"&lt;")
-.replace(/>/g,"&gt;")
-.replace(/"/g,"&quot;")
-.replace(/'/g,"&#039;");
-
+ if(value===null||value===undefined)return "";
+ return String(value)
+ .replace(/&/g,"&amp;")
+ .replace(/</g,"&lt;")
+ .replace(/>/g,"&gt;")
+ .replace(/"/g,"&quot;")
+ .replace(/'/g,"&#039;");
 }
 
 
 function statusBadge(status){
 
-const value=String(status||"UNKNOWN").toUpperCase();
+ const value=String(status||"UNKNOWN").toUpperCase();
+ let cls="unknown";
 
-let cls="unknown";
+ if(value==="LOW")cls="low";
+ if(value==="NORMAL")cls="normal";
+ if(value==="HIGH")cls="high";
 
-if(value==="LOW") cls="low";
-if(value==="NORMAL") cls="normal";
-if(value==="HIGH") cls="high";
-
-return `
-<span
-class="badge ${cls}"
-aria-label="Status: ${escapeHTML(value)}">
-${escapeHTML(value)}
-</span>`;
-
+ return `
+ <span class="badge ${cls}" aria-label="Status: ${escapeHTML(value)}">
+ ${escapeHTML(value)}
+ </span>`;
 }
 
 
 function showError(message){
-
-const status=document.getElementById("status");
-
-status.classList.add("error");
-status.textContent="✕ "+message;
-
+ const status=document.getElementById("status");
+ status.classList.add("error");
+ status.textContent="✕ "+message;
 }
 
 
 async function processReport(){
 
-const fileInput=document.getElementById("report");
-const button=document.getElementById("processBtn");
-const status=document.getElementById("status");
-const results=document.getElementById("results");
+ const fileInput=document.getElementById("report");
+ const button=document.getElementById("processBtn");
+ const status=document.getElementById("status");
+ const results=document.getElementById("results");
 
-status.classList.remove("error");
+ status.classList.remove("error");
 
+ if(!fileInput.files.length){
+  showError("Please upload a medical report first.");
+  fileInput.focus();
+  return;
+ }
 
-if(!fileInput.files.length){
+ const file=fileInput.files[0];
 
-showError("Please upload a medical report first.");
-fileInput.focus();
-return;
+ if(file.size>8*1024*1024){
+  showError("File is too large. Maximum allowed size is 8 MB.");
+  fileInput.focus();
+  return;
+ }
 
-}
+ const patient={
+  age:document.getElementById("age").value,
+  sex:document.getElementById("sex").value,
+  symptoms:document.getElementById("symptoms").value,
+  conditions:document.getElementById("conditions").value,
+  allergies:document.getElementById("allergies").value,
+  medications:document.getElementById("medications").value
+ };
 
+ const formData=new FormData();
 
-const file=fileInput.files[0];
+ formData.append("file",file);
+ formData.append("patient",JSON.stringify(patient));
 
+ button.disabled=true;
+ button.setAttribute("aria-busy","true");
+ button.textContent="⏳ AI PROCESSING...";
 
-if(file.size>8*1024*1024){
+ status.textContent="◈ Reading and structuring the medical report...";
+ results.innerHTML="";
 
-showError("File is too large. Maximum allowed size is 8 MB.");
-fileInput.focus();
-return;
+ try{
 
-}
+  const response=await fetch("/analyze",{
+   method:"POST",
+   body:formData
+  });
 
+  let data;
 
-const patient={
+  try{
+   data=await response.json();
+  }catch{
+   throw new Error("The server returned an unexpected response.");
+  }
 
-age:document.getElementById("age").value,
-sex:document.getElementById("sex").value,
-symptoms:document.getElementById("symptoms").value,
-conditions:document.getElementById("conditions").value,
-allergies:document.getElementById("allergies").value,
-medications:document.getElementById("medications").value
+  if(data.error){
+   throw new Error(data.error);
+  }
 
-};
+  renderResults(data);
 
+  status.classList.remove("error");
+  status.textContent="✓ Analysis complete — review the structured information.";
 
-const formData=new FormData();
+ }catch(error){
 
-formData.append("file",file);
-formData.append("patient",JSON.stringify(patient));
+  showError(error.message||"Unable to process report.");
 
+ }finally{
 
-button.disabled=true;
-button.setAttribute("aria-busy","true");
-button.textContent="⏳ AI PROCESSING...";
+  button.disabled=false;
+  button.removeAttribute("aria-busy");
+  button.textContent="⚡ PROCESS MEDICAL REPORT";
 
-status.textContent="◈ Reading and structuring the medical report...";
-results.innerHTML="";
-
-
-try{
-
-const response=await fetch("/analyze",{
-method:"POST",
-body:formData
-});
-
-
-let data;
-
-try{
-
-data=await response.json();
-
-}catch{
-
-throw new Error("The server returned an unexpected response.");
-
-}
-
-
-if(data.error){
-
-throw new Error(data.error);
-
-}
-
-
-renderResults(data);
-
-status.classList.remove("error");
-status.textContent="✓ Analysis complete — review the structured information.";
-
-
-}catch(error){
-
-showError(error.message||"Unable to process report.");
-
-
-}finally{
-
-button.disabled=false;
-button.removeAttribute("aria-busy");
-button.textContent="⚡ Process Medical Report";
-
-}
-
+ }
 }
 
 
 function renderResults(data){
 
-const results=document.getElementById("results");
+ const results=document.getElementById("results");
+ const tests=Array.isArray(data.tests)?data.tests:[];
 
-let rows="";
+ let rows="";
 
-const tests=Array.isArray(data.tests) ? data.tests : [];
+ if(tests.length){
 
+  tests.forEach((test,index)=>{
 
-if(tests.length){
+   rows+=`
+   <tr>
+   <td>${escapeHTML(index+1)}</td>
+   <td>${escapeHTML(test.test_name)}</td>
+   <td>${escapeHTML(test.value)}</td>
+   <td>${escapeHTML(test.unit)}</td>
+   <td>${escapeHTML(test.reference_range)}</td>
+   <td>${statusBadge(test.status)}</td>
+   <td>${escapeHTML(test.date)}</td>
+   <td>${escapeHTML(test.observation)}</td>
+   <td>${escapeHTML(test.source)}</td>
+   </tr>`;
 
-tests.forEach((test,index)=>{
+  });
 
-rows+=`
+ }else{
 
-<tr>
+  rows=`
+  <tr>
+  <td colspan="9" class="empty">
+  No structured test results were extracted.
+  </td>
+  </tr>`;
 
-<td>${escapeHTML(index+1)}</td>
+ }
 
-<td>${escapeHTML(test.test_name)}</td>
 
-<td>${escapeHTML(test.value)}</td>
+ let conflicts="";
 
-<td>${escapeHTML(test.unit)}</td>
+ const conflictList=
+ Array.isArray(data.conflicts)?data.conflicts:[];
 
-<td>${escapeHTML(test.reference_range)}</td>
+ if(conflictList.length){
 
-<td>${statusBadge(test.status)}</td>
+  conflictList.forEach(item=>{
 
-<td>${escapeHTML(test.date)}</td>
+   conflicts+=`
+   <div class="conflict" role="alert">
+   ⚠️ ${escapeHTML(item)}
+   </div>`;
 
-<td>${escapeHTML(test.observation)}</td>
+  });
 
-<td>${escapeHTML(test.source)}</td>
+ }else{
 
-</tr>`;
+  conflicts=`
+  <p class="empty">
+  ✓ No conflicts were detected in the supplied information.
+  </p>`;
 
-});
+ }
 
-}else{
 
-rows=`
+ results.innerHTML=`
 
-<tr>
+ <div class="results-head">
+ <div>ANALYSIS <span>COMPLETE</span></div>
+ <div>${tests.length} TESTS EXTRACTED</div>
+ </div>
 
-<td colspan="9" class="empty">
-No structured test results were extracted.
-</td>
+ <section class="card" aria-labelledby="record-heading">
 
-</tr>`;
+ <div class="title">
+ <div class="icon" aria-hidden="true">📊</div>
+ <div>
+ <h3 id="record-heading">Structured Medical Record</h3>
+ <div class="sub">AI-extracted information from the uploaded source</div>
+ </div>
+ </div>
 
-}
+ <div class="table-wrap">
 
+ <table>
 
-let conflicts="";
+ <caption>
+ Structured medical test results extracted from the uploaded report
+ </caption>
 
-const conflictList=
-Array.isArray(data.conflicts) ? data.conflicts : [];
+ <thead>
+ <tr>
+ <th scope="col">#</th>
+ <th scope="col">Test</th>
+ <th scope="col">Value</th>
+ <th scope="col">Unit</th>
+ <th scope="col">Reference Range</th>
+ <th scope="col">Status</th>
+ <th scope="col">Date</th>
+ <th scope="col">Observation</th>
+ <th scope="col">Source</th>
+ </tr>
+ </thead>
 
+ <tbody>${rows}</tbody>
 
-if(conflictList.length){
+ </table>
+ </div>
 
-conflictList.forEach(item=>{
+ </section>
 
-conflicts+=`
 
-<div class="conflict" role="alert">
-⚠️ ${escapeHTML(item)}
-</div>`;
+ <div class="dashboard">
 
-});
+ <section class="card" aria-labelledby="summary-heading">
 
-}else{
+ <div class="title">
+ <div class="icon" aria-hidden="true">🧠</div>
+ <div>
+ <h3 id="summary-heading">Patient-Friendly Summary</h3>
+ <div class="sub">Simplified information found in the report</div>
+ </div>
+ </div>
 
-conflicts=`
+ <div class="summary">
+ ${escapeHTML(data.summary||"No summary generated.")}
+ </div>
 
-<p class="empty">
-✓ No conflicts were detected in the supplied information.
-</p>`;
+ </section>
 
-}
 
+ <section class="card" aria-labelledby="conflict-heading">
 
-results.innerHTML=`
+ <div class="title">
+ <div class="icon" aria-hidden="true">⚠️</div>
+ <div>
+ <h3 id="conflict-heading">Conflict Detection</h3>
+ <div class="sub">Potential inconsistencies requiring review</div>
+ </div>
+ </div>
 
-<div class="results-head">
+ ${conflicts}
 
-<div class="results-label">
-ANALYSIS <span>COMPLETE</span>
-</div>
+ </section>
 
-<div class="results-label">
-${tests.length} TESTS EXTRACTED
-</div>
+ </div>
 
-</div>
 
+ <section class="card" aria-labelledby="responsible-heading">
 
-<section class="card" aria-labelledby="record-heading">
+ <div class="title">
+ <div class="icon" aria-hidden="true">🛡️</div>
+ <div>
+ <h3 id="responsible-heading">Responsible AI</h3>
+ <div class="sub">Safety and transparency layer</div>
+ </div>
+ </div>
 
-<div class="title">
+ <div class="notice">
 
-<div class="icon" aria-hidden="true">📊</div>
+ <strong>MedLens is a review-support tool.</strong>
 
-<div>
-<h3 id="record-heading">Structured Medical Record</h3>
-<div class="sub">
-AI-extracted information from the uploaded source
-</div>
-</div>
+ <br><br>
 
-</div>
+ It does not provide medical diagnosis, prescribe treatment,
+ recommend medication changes, or determine medication dosage.
 
+ <br><br>
 
-<div class="table-wrap">
+ Reference-range status is marked LOW, NORMAL, or HIGH only
+ when the uploaded report provides a usable reference range.
+ Otherwise, the status is shown as UNKNOWN.
 
-<table>
+ <br><br>
 
-<caption>
-Structured medical test results extracted from the uploaded report
-</caption>
+ AI-extracted information should be reviewed by a qualified
+ human against the original report before clinical use.
 
-<thead>
+ </div>
 
-<tr>
-
-<th scope="col">#</th>
-<th scope="col">Test</th>
-<th scope="col">Value</th>
-<th scope="col">Unit</th>
-<th scope="col">Reference Range</th>
-<th scope="col">Status</th>
-<th scope="col">Date</th>
-<th scope="col">Observation</th>
-<th scope="col">Source</th>
-
-</tr>
-
-</thead>
-
-<tbody>
-${rows}
-</tbody>
-
-</table>
-
-</div>
-
-</section>
-
-
-<div class="dashboard-grid">
-
-
-<section class="card" aria-labelledby="summary-heading">
-
-<div class="title">
-
-<div class="icon" aria-hidden="true">🧠</div>
-
-<div>
-<h3 id="summary-heading">Patient-Friendly Summary</h3>
-<div class="sub">Simplified information found in the report</div>
-</div>
-
-</div>
-
-
-<div class="summary">
-${escapeHTML(data.summary||"No summary generated.")}
-</div>
-
-</section>
-
-
-<section class="card" aria-labelledby="conflict-heading">
-
-<div class="title">
-
-<div class="icon" aria-hidden="true">⚠️</div>
-
-<div>
-<h3 id="conflict-heading">Conflict Detection</h3>
-<div class="sub">Potential inconsistencies requiring review</div>
-</div>
-
-</div>
-
-${conflicts}
-
-</section>
-
-</div>
-
-
-<section class="card" aria-labelledby="responsible-heading">
-
-<div class="title">
-
-<div class="icon" aria-hidden="true">🛡️</div>
-
-<div>
-<h3 id="responsible-heading">Responsible AI</h3>
-<div class="sub">Safety and transparency layer</div>
-</div>
-
-</div>
-
-
-<div class="notice">
-
-<strong>MedLens is a review-support tool.</strong>
-
-<br><br>
-
-It does not provide medical diagnosis, prescribe treatment,
-recommend medication changes, or determine medication dosage.
-
-<br><br>
-
-Reference-range status is marked LOW, NORMAL, or HIGH only
-when the uploaded report provides a usable reference range.
-Otherwise, the status is shown as UNKNOWN.
-
-<br><br>
-
-AI-extracted information should be reviewed by a qualified
-human against the original report before clinical use.
-
-</div>
-
-</section>
-
-`;
+ </section>
+ `;
 
 }
 
@@ -1366,6 +1029,7 @@ async def home():
 
 
 def clean_json_text(text):
+
     text = str(text or "").strip()
 
     text = re.sub(
@@ -1397,37 +1061,14 @@ def clean_json_text(text):
 
 
 def make_data_url(file_bytes, mime_type):
+
     encoded = base64.b64encode(file_bytes).decode("utf-8")
+
     return f"data:{mime_type};base64,{encoded}"
 
 
-def _first_number(value):
-    """
-    Extract the first numeric value from a field.
-    This deliberately uses the first number because some reports
-    contain values such as '1.0-2.0*' where the report may have
-    scanned a range-like value into the value column.
-    """
-    if value is None:
-        return None
-
-    text = str(value).replace(",", "")
-
-    match = re.search(
-        r"[-+]?(?:\d+(?:\.\d*)?|\.\d+)",
-        text
-    )
-
-    if not match:
-        return None
-
-    try:
-        return float(match.group(0))
-    except ValueError:
-        return None
-
-
 def _numbers(value):
+
     if value is None:
         return []
 
@@ -1449,25 +1090,14 @@ def _numbers(value):
     return numbers
 
 
+def _first_number(value):
+
+    numbers = _numbers(value)
+
+    return numbers[0] if numbers else None
+
+
 def classify_from_reference(value, reference):
-    """
-    Classify a result only when the source report provides
-    a reference range or reference value.
-
-    Supports common report formats such as:
-      5.0-8.0
-      5.0–8.0
-      <140
-      <=140
-      >5
-      >=5
-      Negative
-      None
-      Occasional
-
-    If the source reference cannot be interpreted safely,
-    UNKNOWN is returned.
-    """
 
     value_text = str(value or "").strip()
     ref_text = str(reference or "").strip()
@@ -1475,15 +1105,11 @@ def classify_from_reference(value, reference):
     if not value_text or not ref_text:
         return "UNKNOWN"
 
-    value_lower = value_text.lower().strip()
-    ref_lower = ref_text.lower().strip()
+    value_clean = value_text.lower().replace("*","").strip()
+    ref_clean = ref_text.lower().replace("*","").strip()
 
-    # Remove common report markers without changing meaning.
-    value_clean = value_lower.replace("*", "").strip()
-    ref_clean = ref_lower.replace("*", "").strip()
-
-    # Exact qualitative references.
-    qualitative_normal = {
+    # Direct qualitative reference comparisons.
+    if ref_clean in {
         "negative",
         "none",
         "absent",
@@ -1493,57 +1119,59 @@ def classify_from_reference(value, reference):
         "normal",
         "clear",
         "occasional"
-    }
+    }:
 
-    if ref_clean in qualitative_normal:
         if value_clean == ref_clean:
             return "NORMAL"
 
-        # Common report convention:
-        # if a reference explicitly says Negative/None/etc.,
-        # a different reported finding is outside that reference.
         return "HIGH"
 
-    # Handle strict upper bounds: <140, <=140.
-    upper_match = re.fullmatch(
+
+    # <140 / <=140
+    upper = re.fullmatch(
         r"(?:less than|<|<=)\s*([-+]?(?:\d+(?:\.\d*)?|\.\d+))",
         ref_clean
     )
 
-    if upper_match:
-        ref_value = float(upper_match.group(1))
+    if upper:
+
+        limit = float(upper.group(1))
         actual = _first_number(value_clean)
 
         if actual is None:
             return "UNKNOWN"
 
-        if "<=" in ref_clean or "less than or equal" in ref_clean:
-            return "NORMAL" if actual <= ref_value else "HIGH"
+        if "<=" in ref_clean:
+            return "NORMAL" if actual <= limit else "HIGH"
 
-        return "NORMAL" if actual < ref_value else "HIGH"
+        return "NORMAL" if actual < limit else "HIGH"
 
-    # Handle strict lower bounds: >5, >=5.
-    lower_match = re.fullmatch(
+
+    # >5 / >=5
+    lower = re.fullmatch(
         r"(?:greater than|>|>=)\s*([-+]?(?:\d+(?:\.\d*)?|\.\d+))",
         ref_clean
     )
 
-    if lower_match:
-        ref_value = float(lower_match.group(1))
+    if lower:
+
+        limit = float(lower.group(1))
         actual = _first_number(value_clean)
 
         if actual is None:
             return "UNKNOWN"
 
-        if ">=" in ref_clean or "greater than or equal" in ref_clean:
-            return "NORMAL" if actual >= ref_value else "LOW"
+        if ">=" in ref_clean:
+            return "NORMAL" if actual >= limit else "LOW"
 
-        return "NORMAL" if actual > ref_value else "LOW"
+        return "NORMAL" if actual > limit else "LOW"
 
-    # Extract numeric reference boundaries.
+
+    # Numeric ranges such as 5.0-8.0 or 5.0–8.0.
     ref_numbers = _numbers(ref_clean)
 
     if len(ref_numbers) >= 2:
+
         low = ref_numbers[0]
         high = ref_numbers[1]
 
@@ -1563,12 +1191,12 @@ def classify_from_reference(value, reference):
 
         return "NORMAL"
 
-    # A single numeric reference is not enough to determine
-    # LOW/NORMAL/HIGH safely.
+
     return "UNKNOWN"
 
 
 def normalize_result(data):
+
     if not isinstance(data, dict):
         data = {}
 
@@ -1616,20 +1244,16 @@ def normalize_result(data):
             test.get("status", "UNKNOWN")
         ).upper().strip()
 
-        if ai_status not in [
+        if ai_status not in {
             "LOW",
             "NORMAL",
             "HIGH",
             "UNKNOWN"
-        ]:
+        }:
             ai_status = "UNKNOWN"
 
-        # Critical reliability layer:
-        # whenever a reference range exists, calculate the
-        # classification ourselves from that source reference.
-        #
-        # This prevents the model from returning UNKNOWN when
-        # a directly comparable source range is available.
+
+        # Deterministic reference-range validation.
         calculated_status = classify_from_reference(
             value,
             reference_range
@@ -1640,10 +1264,11 @@ def normalize_result(data):
         else:
             status = ai_status
 
-        # If no reference exists, never allow the AI to invent
-        # LOW/NORMAL/HIGH. The safe result is UNKNOWN.
+
+        # Never allow a status without a source reference.
         if not reference_range:
             status = "UNKNOWN"
+
 
         normalized_tests.append({
 
@@ -1749,14 +1374,12 @@ async def analyze(
         patient_data = {}
 
 
-    # Limit user-provided text so unnecessarily large prompts
-    # are not sent to the AI service.
+    # Bound user-provided text for efficiency.
     for key in list(patient_data.keys()):
 
         value = patient_data[key]
 
         if isinstance(value, str):
-
             patient_data[key] = value[:1000]
 
 
@@ -1764,53 +1387,43 @@ async def analyze(
 You are the extraction engine for MedLens,
 a clinical information structuring application.
 
-Your task is ONLY to read the uploaded medical report
-and convert its information into structured data.
+Read ONLY the uploaded medical report and convert
+its contents into structured information.
 
 PATIENT-PROVIDED INFORMATION:
 {json.dumps(patient_data, ensure_ascii=False)}
 
-STRICT SAFETY AND ACCURACY RULES:
+STRICT RULES:
 
 1. Extract medical test information ONLY from the uploaded report.
 2. NEVER invent a laboratory value.
 3. NEVER invent a unit.
 4. NEVER invent a date.
 5. NEVER invent a reference range.
-6. Preserve the reference range exactly as it appears in the report.
-7. LOW, NORMAL, or HIGH may ONLY be assigned using a
-   reference range explicitly present in the uploaded report.
-8. If a usable reference range exists, compare the reported
-   value directly against that source range.
-9. For numeric ranges:
-   - below the lower bound = LOW
-   - inside the range = NORMAL
-   - above the upper bound = HIGH
-10. For references such as "<140":
-    values below the stated upper limit are NORMAL;
-    values at or above the limit are HIGH.
-11. For references such as ">5":
-    values above the stated lower limit are NORMAL;
-    values at or below the limit are LOW.
-12. For qualitative references such as Negative, None,
-    Absent or similar, preserve the exact source wording.
-13. If a reference range cannot safely support a comparison,
-    use UNKNOWN.
-14. Do not use general medical knowledge to create ranges.
-15. Do not diagnose, infer, or speculate about disease.
-16. If the report mentions a diagnosis or interpretation,
-    reproduce it only as an attributed statement such as
-    "The report states..." or "The report mentions...".
-17. Do not turn observations into medical conclusions.
-18. Do not recommend treatment or medication changes.
-19. Do not recommend dosage changes.
-20. Do not present uncertain information as fact.
-21. Detect obvious contradictions between supplied patient
-    information and the uploaded report.
-22. Missing optional patient information is not a conflict.
-23. Keep the summary concise, factual, and patient-friendly.
-24. Preserve source information and dates when readable.
-25. Do not add information that is not present in the source.
+6. Preserve source values and reference ranges as written.
+7. LOW, NORMAL, or HIGH may ONLY be assigned when the
+   uploaded report provides a reference range.
+8. Numeric values below the source lower bound are LOW.
+9. Numeric values inside the source range are NORMAL.
+10. Numeric values above the source upper bound are HIGH.
+11. For <X references, values outside the stated upper limit are HIGH.
+12. For >X references, values outside the stated lower limit are LOW.
+13. For qualitative references such as Negative, None or Absent,
+    compare only according to the wording shown in the report.
+14. If comparison is not unambiguous, use UNKNOWN.
+15. NEVER use general medical knowledge to create a range.
+16. Do not diagnose or speculate about disease.
+17. If the report itself mentions a diagnosis or interpretation,
+    reproduce it only as "The report states..." or
+    "The report mentions...".
+18. Do not recommend treatment.
+19. Do not recommend medication changes.
+20. Do not recommend dosage changes.
+21. Detect obvious contradictions between patient information
+    and information explicitly present in the report.
+22. Missing optional patient information is NOT a conflict.
+23. Keep the summary concise, factual and patient-friendly.
+24. Do not add information not present in the source.
 
 Return ONLY valid JSON.
 
@@ -1833,7 +1446,7 @@ Use exactly:
   "summary": "string"
 }}
 
-Do not wrap JSON in markdown.
+Do not use markdown.
 """
 
 
