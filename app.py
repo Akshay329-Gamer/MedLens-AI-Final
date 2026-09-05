@@ -15,6 +15,7 @@ HTML = """
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="MedLens AI clinical information structuring tool">
 <title>MedLens — AI Clinical Intelligence</title>
 
 <style>
@@ -189,9 +190,7 @@ grid-template-columns:repeat(2,1fr);
 gap:16px
 }
 
-.full{
-grid-column:1/-1
-}
+.full{grid-column:1/-1}
 
 label{
 display:block;
@@ -223,9 +222,16 @@ border-color:rgba(72,217,255,.65);
 box-shadow:0 0 0 3px rgba(72,217,255,.07)
 }
 
-select option{
-background:#0b1628
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+button:focus-visible,
+.file-label:focus-visible{
+outline:3px solid var(--cyan);
+outline-offset:2px
 }
+
+select option{background:#0b1628}
 
 textarea{
 min-height:82px;
@@ -269,9 +275,26 @@ color:#647d98
 }
 
 #report{
+display:block;
 margin-top:15px;
 border:0;
 padding:8px
+}
+
+.file-label{
+display:inline-block;
+margin-top:10px;
+padding:10px 16px;
+border:1px solid rgba(72,217,255,.4);
+border-radius:10px;
+color:var(--cyan);
+cursor:pointer;
+font-weight:700
+}
+
+#report:focus-visible{
+outline:3px solid var(--cyan);
+outline-offset:2px
 }
 
 button{
@@ -308,6 +331,8 @@ color:var(--cyan);
 font-size:13px
 }
 
+.status.error{color:var(--red)}
+
 .table-wrap{
 overflow-x:auto;
 border:1px solid var(--line);
@@ -318,6 +343,13 @@ table{
 width:100%;
 min-width:900px;
 border-collapse:collapse
+}
+
+caption{
+text-align:left;
+padding:10px;
+color:var(--muted);
+font-size:12px
 }
 
 th,
@@ -337,13 +369,9 @@ text-transform:uppercase;
 letter-spacing:.5px
 }
 
-td{
-color:#d8e6f5
-}
+td{color:#d8e6f5}
 
-tr:hover td{
-background:rgba(72,217,255,.025)
-}
+tr:hover td{background:rgba(72,217,255,.025)}
 
 .badge{
 display:inline-block;
@@ -409,9 +437,7 @@ color:#d9cfae;
 font-size:13px
 }
 
-.notice strong{
-color:var(--yellow)
-}
+.notice strong{color:var(--yellow)}
 
 .empty{
 color:#738ba5;
@@ -423,6 +449,18 @@ text-align:center;
 color:#50667f;
 font-size:12px;
 padding:5px 0 35px
+}
+
+.sr-only{
+position:absolute;
+width:1px;
+height:1px;
+padding:0;
+margin:-1px;
+overflow:hidden;
+clip:rect(0,0,0,0);
+white-space:nowrap;
+border:0
 }
 
 @media(max-width:700px){
@@ -441,143 +479,159 @@ padding:5px 0 35px
 <div class="header-inner">
 
 <div class="brand">
-
-<div class="logo">🧬</div>
+<div class="logo" aria-hidden="true">🧬</div>
 
 <div>
 <h1><span>Med</span>Lens</h1>
 <p>AI-Powered Clinical Information Intelligence</p>
 </div>
-
 </div>
 
 <div class="tag">
-<span class="dot"></span>
+<span class="dot" aria-hidden="true"></span>
 AI INFORMATION STRUCTURING SYSTEM
 </div>
 
 </div>
 </header>
 
-
 <main class="container">
 
-
-<div class="card">
+<section class="card" aria-labelledby="patient-heading">
 
 <div class="title">
-
-<div class="icon">👤</div>
+<div class="icon" aria-hidden="true">👤</div>
 
 <div>
-<h2>Patient Information</h2>
+<h2 id="patient-heading">Patient Information</h2>
 <div class="sub">Provide available patient context</div>
 </div>
-
 </div>
-
 
 <div class="grid">
 
 <div>
-<label>AGE</label>
-<input id="age" type="number" min="0" max="150" placeholder="e.g. 21">
+<label for="age">AGE</label>
+<input
+id="age"
+name="age"
+type="number"
+min="0"
+max="150"
+placeholder="e.g. 21"
+autocomplete="off">
 </div>
 
 <div>
-<label>SEX</label>
-
-<select id="sex">
+<label for="sex">SEX</label>
+<select id="sex" name="sex">
 <option value="">Select</option>
 <option>Male</option>
 <option>Female</option>
 <option>Other</option>
 <option>Prefer not to say</option>
 </select>
-
 </div>
 
 <div class="full">
-<label>SYMPTOMS</label>
-<textarea id="symptoms" placeholder="Enter patient-reported symptoms"></textarea>
+<label for="symptoms">SYMPTOMS</label>
+<textarea
+id="symptoms"
+name="symptoms"
+placeholder="Enter patient-reported symptoms"></textarea>
 </div>
 
 <div>
-<label>KNOWN CONDITIONS</label>
-<textarea id="conditions" placeholder="Existing conditions"></textarea>
+<label for="conditions">KNOWN CONDITIONS</label>
+<textarea
+id="conditions"
+name="conditions"
+placeholder="Existing conditions"></textarea>
 </div>
 
 <div>
-<label>ALLERGIES</label>
-<textarea id="allergies" placeholder="Known allergies"></textarea>
+<label for="allergies">ALLERGIES</label>
+<textarea
+id="allergies"
+name="allergies"
+placeholder="Known allergies"></textarea>
 </div>
 
 <div class="full">
-<label>CURRENT MEDICATIONS</label>
-<textarea id="medications" placeholder="Current medications"></textarea>
+<label for="medications">CURRENT MEDICATIONS</label>
+<textarea
+id="medications"
+name="medications"
+placeholder="Current medications"></textarea>
 </div>
 
 </div>
-</div>
+</section>
 
-
-<div class="card">
+<section class="card" aria-labelledby="report-heading">
 
 <div class="title">
-
-<div class="icon">📄</div>
+<div class="icon" aria-hidden="true">📄</div>
 
 <div>
-<h2>Medical Report</h2>
+<h2 id="report-heading">Medical Report</h2>
 <div class="sub">Upload a report for AI-powered structuring</div>
 </div>
-
 </div>
-
 
 <div class="upload">
 
-<div class="upload-icon">☁️</div>
+<div class="upload-icon" aria-hidden="true">☁️</div>
 
 <strong>Upload Medical Report</strong>
 
 <p>PDF, JPG, PNG or WEBP</p>
 
-<small>Maximum file size: 8 MB</small>
+<small id="report-help">
+Maximum file size: 8 MB
+</small>
+
+<label for="report" class="file-label">
+Choose medical report
+</label>
 
 <input
 id="report"
+name="report"
 type="file"
 accept=".pdf,.jpg,.jpeg,.png,.webp"
->
+aria-describedby="report-help">
 
 </div>
 
-
-<button id="processBtn" onclick="processReport()">
+<button
+id="processBtn"
+type="button"
+onclick="processReport()"
+aria-describedby="status">
 ⚡ Process Medical Report
 </button>
 
-<div id="status" class="status"></div>
+<div
+id="status"
+class="status"
+role="status"
+aria-live="polite"
+aria-atomic="true"></div>
 
-</div>
+</section>
 
-
-<div id="results"></div>
-
+<div id="results" aria-live="polite"></div>
 
 <div class="footer">
 MedLens • Clinical information structuring • Human review required
 </div>
 
-
 </main>
-
 
 <script>
 
 function escapeHTML(value){
-
 if(value===null||value===undefined){
 return "";
 }
@@ -588,7 +642,6 @@ return String(value)
 .replace(/>/g,"&gt;")
 .replace(/"/g,"&quot;")
 .replace(/'/g,"&#039;");
-
 }
 
 
@@ -613,10 +666,20 @@ cls="high";
 }
 
 return `
-<span class="badge ${cls}">
+<span class="badge ${cls}" aria-label="Status: ${escapeHTML(value)}">
 ${escapeHTML(value)}
 </span>
 `;
+
+}
+
+
+function showError(message){
+
+const status=document.getElementById("status");
+
+status.classList.add("error");
+status.textContent="✕ "+message;
 
 }
 
@@ -636,11 +699,13 @@ const results=
 document.getElementById("results");
 
 
+status.classList.remove("error");
+
+
 if(!fileInput.files.length){
 
-alert(
-"Please upload a medical report first."
-);
+showError("Please upload a medical report first.");
+fileInput.focus();
 
 return;
 
@@ -653,9 +718,8 @@ fileInput.files[0];
 
 if(file.size>8*1024*1024){
 
-alert(
-"File is too large. Maximum allowed size is 8 MB."
-);
+showError("File is too large. Maximum allowed size is 8 MB.");
+fileInput.focus();
 
 return;
 
@@ -703,6 +767,8 @@ JSON.stringify(patient)
 
 button.disabled=true;
 
+button.setAttribute("aria-busy","true");
+
 button.textContent=
 "⏳ AI Processing...";
 
@@ -726,8 +792,15 @@ body:formData
 );
 
 
-const data=
-await response.json();
+let data;
+
+try{
+data=await response.json();
+}catch{
+throw new Error(
+"The server returned an unexpected response."
+);
+}
 
 
 if(data.error){
@@ -742,25 +815,23 @@ data.error
 renderResults(data);
 
 
+status.classList.remove("error");
+
 status.textContent=
 "✓ Report processed successfully.";
 
-
 }catch(error){
 
-alert(
+showError(
 error.message||
 "Unable to process report."
 );
 
-
-status.textContent=
-"✕ Processing failed.";
-
-
 }finally{
 
 button.disabled=false;
+
+button.removeAttribute("aria-busy");
 
 button.textContent=
 "⚡ Process Medical Report";
@@ -860,7 +931,7 @@ data.conflicts.forEach(item=>{
 
 conflicts+=`
 
-<div class="conflict">
+<div class="conflict" role="alert">
 ⚠️ ${escapeHTML(item)}
 </div>
 
@@ -883,17 +954,19 @@ conflicts=`
 
 results.innerHTML=`
 
-<div class="card">
+<section class="card" aria-labelledby="record-heading">
 
 <div class="title">
 
-<div class="icon">📊</div>
+<div class="icon" aria-hidden="true">📊</div>
 
 <div>
-<h2>Structured Medical Record</h2>
+<h2 id="record-heading">Structured Medical Record</h2>
+
 <div class="sub">
 AI-extracted information from the uploaded source
 </div>
+
 </div>
 
 </div>
@@ -903,23 +976,26 @@ AI-extracted information from the uploaded source
 
 <table>
 
+<caption>
+Structured medical test results extracted from the uploaded report
+</caption>
+
 <thead>
 
 <tr>
 
-<th>Test</th>
-<th>Value</th>
-<th>Unit</th>
-<th>Reference Range</th>
-<th>Status</th>
-<th>Date</th>
-<th>Observation</th>
-<th>Source</th>
+<th scope="col">Test</th>
+<th scope="col">Value</th>
+<th scope="col">Unit</th>
+<th scope="col">Reference Range</th>
+<th scope="col">Status</th>
+<th scope="col">Date</th>
+<th scope="col">Observation</th>
+<th scope="col">Source</th>
 
 </tr>
 
 </thead>
-
 
 <tbody>
 
@@ -931,17 +1007,18 @@ ${rows}
 
 </div>
 
-</div>
+</section>
 
 
-<div class="card">
+<section class="card" aria-labelledby="conflict-heading">
 
 <div class="title">
 
-<div class="icon">⚠️</div>
+<div class="icon" aria-hidden="true">⚠️</div>
 
 <div>
-<h2>Conflict Detection</h2>
+
+<h2 id="conflict-heading">Conflict Detection</h2>
 
 <div class="sub">
 Potential inconsistencies requiring human review
@@ -953,17 +1030,18 @@ Potential inconsistencies requiring human review
 
 ${conflicts}
 
-</div>
+</section>
 
 
-<div class="card">
+<section class="card" aria-labelledby="summary-heading">
 
 <div class="title">
 
-<div class="icon">🧠</div>
+<div class="icon" aria-hidden="true">🧠</div>
 
 <div>
-<h2>Patient-Friendly Summary</h2>
+
+<h2 id="summary-heading">Patient-Friendly Summary</h2>
 
 <div class="sub">
 Simplified view of information found in the report
@@ -972,7 +1050,6 @@ Simplified view of information found in the report
 </div>
 
 </div>
-
 
 <div class="summary">
 
@@ -983,17 +1060,18 @@ data.summary||
 
 </div>
 
-</div>
+</section>
 
 
-<div class="card">
+<section class="card" aria-labelledby="responsible-heading">
 
 <div class="title">
 
-<div class="icon">🔐</div>
+<div class="icon" aria-hidden="true">🔐</div>
 
 <div>
-<h2>Responsible AI</h2>
+
+<h2 id="responsible-heading">Responsible AI</h2>
 
 <div class="sub">
 Safety and transparency layer
@@ -1031,11 +1109,12 @@ by a qualified human before clinical use.
 
 </div>
 
-</div>
+</section>
 
 `;
 
 }
+
 
 </script>
 
@@ -1051,39 +1130,39 @@ async def home():
 
 def clean_json_text(text):
 
-    text=text.strip()
+    text = text.strip()
 
-    text=re.sub(
+    text = re.sub(
         r"^```json\s*",
         "",
         text,
         flags=re.IGNORECASE
     )
 
-    text=re.sub(
+    text = re.sub(
         r"^```\s*",
         "",
         text
     )
 
-    text=re.sub(
+    text = re.sub(
         r"\s*```$",
         "",
         text
     )
 
-    start=text.find("{")
-    end=text.rfind("}")
+    start = text.find("{")
+    end = text.rfind("}")
 
-    if start!=-1 and end!=-1:
-        text=text[start:end+1]
+    if start != -1 and end != -1:
+        text = text[start:end + 1]
 
     return text.strip()
 
 
-def make_data_url(file_bytes,mime_type):
+def make_data_url(file_bytes, mime_type):
 
-    encoded=base64.b64encode(
+    encoded = base64.b64encode(
         file_bytes
     ).decode("utf-8")
 
@@ -1092,25 +1171,25 @@ def make_data_url(file_bytes,mime_type):
 
 def normalize_result(data):
 
-    if not isinstance(data,dict):
-        data={}
+    if not isinstance(data, dict):
+        data = {}
 
-    tests=data.get(
+    tests = data.get(
         "tests",
         []
     )
 
-    if not isinstance(tests,list):
-        tests=[]
+    if not isinstance(tests, list):
+        tests = []
 
-    normalized_tests=[]
+    normalized_tests = []
 
     for test in tests:
 
-        if not isinstance(test,dict):
+        if not isinstance(test, dict):
             continue
 
-        status=str(
+        status = str(
             test.get(
                 "status",
                 "UNKNOWN"
@@ -1123,55 +1202,55 @@ def normalize_result(data):
             "HIGH",
             "UNKNOWN"
         ]:
-            status="UNKNOWN"
+            status = "UNKNOWN"
 
         normalized_tests.append({
 
-            "test_name":str(
+            "test_name": str(
                 test.get(
                     "test_name",
                     ""
                 )
             ),
 
-            "value":str(
+            "value": str(
                 test.get(
                     "value",
                     ""
                 )
             ),
 
-            "unit":str(
+            "unit": str(
                 test.get(
                     "unit",
                     ""
                 )
             ),
 
-            "reference_range":str(
+            "reference_range": str(
                 test.get(
                     "reference_range",
                     ""
                 )
             ),
 
-            "status":status,
+            "status": status,
 
-            "date":str(
+            "date": str(
                 test.get(
                     "date",
                     ""
                 )
             ),
 
-            "observation":str(
+            "observation": str(
                 test.get(
                     "observation",
                     ""
                 )
             ),
 
-            "source":str(
+            "source": str(
                 test.get(
                     "source",
                     "uploaded report"
@@ -1179,8 +1258,7 @@ def normalize_result(data):
             )
         })
 
-
-    conflicts=data.get(
+    conflicts = data.get(
         "conflicts",
         []
     )
@@ -1189,10 +1267,9 @@ def normalize_result(data):
         conflicts,
         list
     ):
-        conflicts=[
+        conflicts = [
             str(conflicts)
         ]
-
 
     return {
 
@@ -1217,14 +1294,13 @@ def normalize_result(data):
 
 @app.post("/analyze")
 async def analyze(
-    file:UploadFile=File(...),
-    patient:str=Form("{}")
+    file: UploadFile = File(...),
+    patient: str = Form("{}")
 ):
 
-    api_key=os.getenv(
+    api_key = os.getenv(
         "OPENROUTER_API_KEY"
     )
-
 
     if not api_key:
 
@@ -1233,20 +1309,17 @@ async def analyze(
                 "OPENROUTER_API_KEY is not configured in Render."
         }
 
-
-    allowed_types={
+    allowed_types = {
         "application/pdf",
         "image/jpeg",
         "image/png",
         "image/webp"
     }
 
-
-    mime_type=(
+    mime_type = (
         file.content_type
         or "application/octet-stream"
     )
-
 
     if mime_type not in allowed_types:
 
@@ -1255,30 +1328,26 @@ async def analyze(
                 "Unsupported file type. Please upload PDF, JPG, PNG, or WEBP."
         }
 
+    file_bytes = await file.read()
 
-    file_bytes=await file.read()
-
-
-    if len(file_bytes)>8*1024*1024:
+    if len(file_bytes) > 8 * 1024 * 1024:
 
         return {
             "error":
                 "File is too large. Maximum allowed size is 8 MB."
         }
 
-
     try:
 
-        patient_data=json.loads(
+        patient_data = json.loads(
             patient
         )
 
     except Exception:
 
-        patient_data={}
+        patient_data = {}
 
-
-    prompt=f"""
+    prompt = f"""
 You are the extraction engine for MedLens,
 a clinical information structuring application.
 
@@ -1313,8 +1382,8 @@ IMPORTANT SAFETY AND ACCURACY RULES:
    empty string and status to UNKNOWN.
 
 7. LOW, NORMAL, or HIGH may ONLY be assigned
-   when the uploaded report itself provides a
-   reference range that allows that classification.
+   when the uploaded report itself provides
+   a reference range that allows that classification.
 
 8. Do not use general medical knowledge to create
    reference ranges.
@@ -1376,14 +1445,12 @@ Use exactly this structure:
 Do not wrap the JSON in markdown.
 """
 
-
-    data_url=make_data_url(
+    data_url = make_data_url(
         file_bytes,
         mime_type
     )
 
-
-    headers={
+    headers = {
         "Authorization":
             f"Bearer {api_key}",
 
@@ -1391,10 +1458,9 @@ Do not wrap the JSON in markdown.
             "application/json"
     }
 
+    if mime_type == "application/pdf":
 
-    if mime_type=="application/pdf":
-
-        content=[
+        content = [
 
             {
                 "type":
@@ -1408,7 +1474,7 @@ Do not wrap the JSON in markdown.
                 "type":
                     "file",
 
-                "file":{
+                "file": {
 
                     "filename":
                         file.filename
@@ -1422,7 +1488,7 @@ Do not wrap the JSON in markdown.
 
     else:
 
-        content=[
+        content = [
 
             {
                 "type":
@@ -1436,7 +1502,7 @@ Do not wrap the JSON in markdown.
                 "type":
                     "image_url",
 
-                "image_url":{
+                "image_url": {
 
                     "url":
                         data_url
@@ -1444,13 +1510,12 @@ Do not wrap the JSON in markdown.
             }
         ]
 
-
-    payload={
+    payload = {
 
         "model":
-    "minimax/minimax-m3:free",
+            "minimax/minimax-m3:free",
 
-        "messages":[
+        "messages": [
 
             {
                 "role":
@@ -1462,10 +1527,9 @@ Do not wrap the JSON in markdown.
         ]
     }
 
-
     try:
 
-        response=requests.post(
+        response = requests.post(
 
             "https://openrouter.ai/api/v1/chat/completions",
 
@@ -1475,7 +1539,6 @@ Do not wrap the JSON in markdown.
 
             timeout=120
         )
-
 
         if not response.ok:
 
@@ -1489,15 +1552,12 @@ Do not wrap the JSON in markdown.
                     )
             }
 
+        result = response.json()
 
-        result=response.json()
-
-
-        choices=result.get(
+        choices = result.get(
             "choices",
             []
         )
-
 
         if not choices:
 
@@ -1506,32 +1566,29 @@ Do not wrap the JSON in markdown.
                     "OpenRouter returned no model response."
             }
 
-
-        message=choices[0].get(
+        message = choices[0].get(
             "message",
             {}
         )
 
-
-        content=message.get(
+        content = message.get(
             "content",
             ""
         )
-
 
         if isinstance(
             content,
             list
         ):
 
-            parts=[]
+            parts = []
 
             for item in content:
 
-                if isinstance(
-                    item,
-                    dict
-                ) and "text" in item:
+                if (
+                    isinstance(item, dict)
+                    and "text" in item
+                ):
 
                     parts.append(
                         str(
@@ -1545,20 +1602,17 @@ Do not wrap the JSON in markdown.
                         str(item)
                     )
 
-            content="".join(parts)
+            content = "".join(parts)
 
+        content = str(content)
 
-        content=str(content)
-
-
-        cleaned=clean_json_text(
+        cleaned = clean_json_text(
             content
         )
 
-
         try:
 
-            parsed=json.loads(
+            parsed = json.loads(
                 cleaned
             )
 
@@ -1573,11 +1627,9 @@ Do not wrap the JSON in markdown.
                     )
             }
 
-
         return normalize_result(
             parsed
         )
-
 
     except requests.exceptions.Timeout:
 
@@ -1586,7 +1638,6 @@ Do not wrap the JSON in markdown.
             "error":
                 "OpenRouter request timed out. Please try again."
         }
-
 
     except requests.exceptions.RequestException as e:
 
@@ -1598,7 +1649,6 @@ Do not wrap the JSON in markdown.
                     f"{str(e)[:500]}"
                 )
         }
-
 
     except Exception as e:
 
