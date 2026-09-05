@@ -2,7 +2,7 @@ import os
 import json
 import base64
 import re
-import requests
+import httpx
 
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.responses import HTMLResponse
@@ -1916,710 +1916,247 @@ async def home():
     return HTML
 
 
+MAX_FILE_SIZE = 8 * 1024 * 1024
+OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
+MODEL = "minimax/minimax-m3:free"
+
+
 def clean_json_text(text):
-
     text = str(text or "").strip()
-
-    text = re.sub(
-        r"^```json\s*",
-        "",
-        text,
-        flags=re.IGNORECASE
-    )
-
-    text = re.sub(
-        r"^```\s*",
-        "",
-        text
-    )
-
-    text = re.sub(
-        r"\s*```$",
-        "",
-        text
-    )
-
-    start = text.find("{")
-    end = text.rfind("}")
-
-    if start != -1 and end != -1 and end > start:
-        text = text[start:end + 1]
-
-    return text.strip()
+    text = re.sub(r"^```(?:json)?\s*|\s*```$", "", text, flags=re.IGNORECASE)
+    start, end = text.find("{"), text.rfind("}")
+    return text[start:end + 1].strip() if start >= 0 and end > start else text
 
 
 def make_data_url(file_bytes, mime_type):
-
-    encoded = base64.b64encode(
-        file_bytes
-    ).decode("utf-8")
-
-    return f"data:{mime_type};base64,{encoded}"
+    return f"data:{mime_type};base64,{base64.b64encode(file_bytes).decode()}"
 
 
 def _numbers(value):
-
     if value is None:
         return []
-
-    text = str(value).replace(",", "")
-
-    found = re.findall(
-        r"[-+]?(?:\d+(?:\.\d*)?|\.\d+)",
-        text
-    )
-
-    numbers=[]
-
-    for item in found:
-
-        try:
-            numbers.append(float(item))
-
-        except ValueError:
-            pass
-
-    return numbers
+    found = re.findall(r"[-+]?(?:\d+(?:\.\d*)?|\.\d+)", str(value).replace(",", ""))
+    return [float(x) for x in found]
 
 
 def _first_number(value):
-
-    numbers=_numbers(value)
-
+    numbers = _numbers(value)
     return numbers[0] if numbers else None
 
 
 def classify_from_reference(value, reference):
-
-    value_text=str(value or "").strip()
-    ref_text=str(reference or "").strip()
-
+    value_text = str(value or "").strip()
+    ref_text = str(reference or "").strip()
     if not value_text or not ref_text:
         return "UNKNOWN"
 
-    value_clean=value_text.lower().replace("*","").strip()
-    ref_clean=ref_text.lower().replace("*","").strip()
+    value_clean = value_text.lower().replace("*", "").strip()
+    ref_clean = ref_text.lower().replace("*", "").strip()
 
+    qualitative = {"negative", "none", "absent", "not detected", "not seen", "nil", "normal", "clear", "occasional"}
+    if ref_clean in qualitative:
+        return "NORMAL" if value_clean == ref_clean else "HIGH"
 
-    # Qualitative references.
-    if ref_clean in {
-        "negative",
-        "none",
-        "absent",
-        "not detected",
-        "not seen",
-        "nil",
-        "normal",
-        "clear",
-        "occasional"
-    }:
-
-        if value_clean == ref_clean:
-            return "NORMAL"
-
-        return "HIGH"
-
-
-    # <X and <=X
-    upper=re.fullmatch(
-        r"(?:less than|<|<=)\s*"
-        r"([-+]?(?:\d+(?:\.\d*)?|\.\d+))",
-        ref_clean
-    )
-
+    upper = re.fullmatch(r"(?:less than|<|<=)\s*([-+]?(?:\d+(?:\.\d*)?|\.\d+))", ref_clean)
     if upper:
-
-        limit=float(
-            upper.group(1)
-        )
-
-        actual=_first_number(
-            value_clean
-        )
-
+        actual = _first_number(value_clean)
         if actual is None:
             return "UNKNOWN"
+        limit = float(upper.group(1))
+        return ("NORMAL" if actual <= limit else "HIGH") if "<=" in ref_clean else ("NORMAL" if actual < limit else "HIGH")
 
-        if "<=" in ref_clean:
-            return "NORMAL" if actual<=limit else "HIGH"
-
-        return "NORMAL" if actual<limit else "HIGH"
-
-
-    # >X and >=X
-    lower=re.fullmatch(
-        r"(?:greater than|>|>=)\s*"
-        r"([-+]?(?:\d+(?:\.\d*)?|\.\d+))",
-        ref_clean
-    )
-
+    lower = re.fullmatch(r"(?:greater than|>|>=)\s*([-+]?(?:\d+(?:\.\d*)?|\.\d+))", ref_clean)
     if lower:
-
-        limit=float(
-            lower.group(1)
-        )
-
-        actual=_first_number(
-            value_clean
-        )
-
+        actual = _first_number(value_clean)
         if actual is None:
             return "UNKNOWN"
+        limit = float(lower.group(1))
+        return ("NORMAL" if actual >= limit else "LOW") if ">=" in ref_clean else ("NORMAL" if actual > limit else "LOW")
 
-        if ">=" in ref_clean:
-            return "NORMAL" if actual>=limit else "LOW"
-
-        return "NORMAL" if actual>limit else "LOW"
-
-
-    # Numeric range.
-    ref_numbers=_numbers(ref_clean)
-
-    if len(ref_numbers)>=2:
-
-        low=ref_numbers[0]
-        high=ref_numbers[1]
-
-        if low>high:
-            low,high=high,low
-
-        actual=_first_number(
-            value_clean
-        )
-
-        if actual is None:
-            return "UNKNOWN"
-
-        if actual<low:
-            return "LOW"
-
-        if actual>high:
-            return "HIGH"
-
-        return "NORMAL"
-
+    # Require a recognizable range separator. This avoids treating values such
+    # as "1.0-2.0" and malformed OCR ranges as arbitrary numeric ranges.
+    if re.search(r"(?:-|–|—|to)" , ref_clean):
+        ref_numbers = _numbers(ref_clean)
+        if len(ref_numbers) >= 2:
+            low, high = sorted(ref_numbers[:2])
+            actual = _first_number(value_clean)
+            if actual is None:
+                return "UNKNOWN"
+            if actual < low:
+                return "LOW"
+            if actual > high:
+                return "HIGH"
+            return "NORMAL"
 
     return "UNKNOWN"
 
 
 def normalize_result(data):
+    if not isinstance(data, dict):
+        data = {}
 
-    if not isinstance(data,dict):
-        data={}
-
-    tests=data.get("tests",[])
-
-    if not isinstance(tests,list):
-        tests=[]
-
-    normalized_tests=[]
-
+    normalized_tests = []
+    tests = data.get("tests", [])
+    if not isinstance(tests, list):
+        tests = []
 
     for test in tests:
-
-        if not isinstance(test,dict):
+        if not isinstance(test, dict):
             continue
+        test_name = str(test.get("test_name", "")).strip()
+        value = str(test.get("value", "")).strip()
+        unit = str(test.get("unit", "")).strip()
+        reference_range = str(test.get("reference_range", "")).strip()
+        date = str(test.get("date", "")).strip()
+        observation = str(test.get("observation", "")).strip()
+        source = str(test.get("source", "uploaded report")).strip() or "uploaded report"
+        ai_status = str(test.get("status", "UNKNOWN")).upper().strip()
+        if ai_status not in {"LOW", "NORMAL", "HIGH", "UNKNOWN"}:
+            ai_status = "UNKNOWN"
 
-
-        test_name=str(
-            test.get("test_name","")
-        ).strip()
-
-        value=str(
-            test.get("value","")
-        ).strip()
-
-        unit=str(
-            test.get("unit","")
-        ).strip()
-
-        reference_range=str(
-            test.get("reference_range","")
-        ).strip()
-
-        date=str(
-            test.get("date","")
-        ).strip()
-
-        observation=str(
-            test.get("observation","")
-        ).strip()
-
-        source=str(
-            test.get(
-                "source",
-                "uploaded report"
-            )
-        ).strip()
-
-
-        ai_status=str(
-            test.get(
-                "status",
-                "UNKNOWN"
-            )
-        ).upper().strip()
-
-
-        if ai_status not in {
-            "LOW",
-            "NORMAL",
-            "HIGH",
-            "UNKNOWN"
-        }:
-
-            ai_status="UNKNOWN"
-
-
-        calculated_status=classify_from_reference(
-            value,
-            reference_range
-        )
-
-
-        if calculated_status!="UNKNOWN":
-            status=calculated_status
-        else:
-            status=ai_status
-
-
+        calculated = classify_from_reference(value, reference_range)
+        status = calculated if calculated != "UNKNOWN" else ai_status
         if not reference_range:
-            status="UNKNOWN"
-
+            status = "UNKNOWN"
 
         normalized_tests.append({
-
-            "test_name":test_name,
-
-            "value":value,
-
-            "unit":unit,
-
-            "reference_range":reference_range,
-
-            "status":status,
-
-            "date":date,
-
-            "observation":observation,
-
-            "source":
-            source or "uploaded report"
-
+            "test_name": test_name,
+            "value": value,
+            "unit": unit,
+            "reference_range": reference_range,
+            "status": status,
+            "date": date,
+            "observation": observation,
+            "source": source
         })
 
-
-    conflicts=data.get(
-        "conflicts",
-        []
-    )
-
-
-    if not isinstance(
-        conflicts,
-        list
-    ):
-
-        conflicts=[
-            str(conflicts)
-        ]
-
+    conflicts = data.get("conflicts", [])
+    if not isinstance(conflicts, list):
+        conflicts = [str(conflicts)]
 
     return {
-
-        "tests":normalized_tests,
-
-        "conflicts":[
-            str(x)
-            for x in conflicts
-        ],
-
-        "summary":str(
-            data.get(
-                "summary",
-                ""
-            )
-        )
-
+        "tests": normalized_tests,
+        "conflicts": [str(x) for x in conflicts],
+        "summary": str(data.get("summary", ""))
     }
 
 
-@app.post("/analyze")
-async def analyze(
-    file:UploadFile=File(...),
-    patient:str=Form("{}")
-):
+# Compact prompt reduces input-token cost while retaining the safety contract.
+PROMPT_TEMPLATE = """MedLens extraction engine. Read ONLY the uploaded medical report.
+Return ONLY valid JSON matching the schema below.
 
-    api_key=os.getenv(
-        "OPENROUTER_API_KEY"
-    )
+PATIENT CONTEXT (may be empty): {patient}
 
+RULES:
+- Extract tests, values, units, dates, observations and reference ranges ONLY from the report.
+- Never invent, infer, or complete missing values, units, dates, ranges, or observations.
+- Preserve source wording for values and reference ranges.
+- Status LOW/NORMAL/HIGH only when the report provides a usable reference range; otherwise UNKNOWN.
+- Numeric: below range=LOW, within= NORMAL, above=HIGH. For <X, above X=HIGH. For >X, below X=LOW.
+- Qualitative comparisons (e.g. Negative/None/Absent) must be unambiguous; otherwise UNKNOWN.
+- Do not use general medical knowledge to create ranges or interpretations.
+- Do not diagnose, speculate, prescribe, recommend treatment, medication changes, or dosage changes.
+- If the report itself states a diagnosis/interpretation, attribute it as “The report states…” or “The report mentions…”.
+- Detect only obvious contradictions between patient-provided information and information explicitly present in the report.
+- Missing optional patient fields are not conflicts.
+- Keep the summary concise, factual and patient-friendly.
 
-    if not api_key:
-
-        return {
-            "error":
-            "OPENROUTER_API_KEY is not configured in Render."
-        }
-
-
-    allowed_types={
-        "application/pdf",
-        "image/jpeg",
-        "image/png",
-        "image/webp"
-    }
-
-
-    mime_type=(
-        file.content_type
-        or "application/octet-stream"
-    )
-
-
-    if mime_type not in allowed_types:
-
-        return {
-            "error":
-            "Unsupported file type. Please upload PDF, JPG, PNG, or WEBP."
-        }
-
-
-    file_bytes=await file.read()
-
-
-    if len(file_bytes)>8*1024*1024:
-
-        return {
-            "error":
-            "File is too large. Maximum allowed size is 8 MB."
-        }
-
-
-    try:
-
-        patient_data=json.loads(
-            patient
-        )
-
-        if not isinstance(
-            patient_data,
-            dict
-        ):
-            patient_data={}
-
-    except Exception:
-
-        patient_data={}
-
-
-    # Bound patient-provided text.
-    for key in list(
-        patient_data.keys()
-    ):
-
-        value=patient_data[key]
-
-        if isinstance(
-            value,
-            str
-        ):
-
-            patient_data[key]=value[:1000]
-
-
-    prompt=f"""
-You are the extraction engine for MedLens,
-a clinical information structuring application.
-
-Read ONLY the uploaded medical report and convert
-its contents into structured information.
-
-PATIENT-PROVIDED INFORMATION:
-{json.dumps(patient_data,ensure_ascii=False)}
-
-STRICT RULES:
-
-1. Extract medical test information ONLY from the uploaded report.
-2. NEVER invent a laboratory value.
-3. NEVER invent a unit.
-4. NEVER invent a date.
-5. NEVER invent a reference range.
-6. Preserve source values and reference ranges as written.
-7. LOW, NORMAL, or HIGH may ONLY be assigned when the
-   uploaded report provides a reference range.
-8. Numeric values below the source lower bound are LOW.
-9. Numeric values inside the source range are NORMAL.
-10. Numeric values above the source upper bound are HIGH.
-11. For <X references, values outside the upper limit are HIGH.
-12. For >X references, values outside the lower limit are LOW.
-13. For qualitative references such as Negative, None or Absent,
-    compare only according to the wording shown in the report.
-14. If comparison is not unambiguous, use UNKNOWN.
-15. NEVER use general medical knowledge to create a range.
-16. Do not diagnose or speculate about disease.
-17. If the report itself mentions a diagnosis or interpretation,
-    reproduce it only as "The report states..." or
-    "The report mentions...".
-18. Do not recommend treatment.
-19. Do not recommend medication changes.
-20. Do not recommend dosage changes.
-21. Detect obvious contradictions between patient information
-    and information explicitly present in the report.
-22. Missing optional patient information is NOT a conflict.
-23. Keep the summary concise, factual and patient-friendly.
-24. Do not add information not present in the source.
-
-Return ONLY valid JSON.
-
-Use exactly:
-
-{{
-  "tests": [
-    {{
-      "test_name": "string",
-      "value": "string",
-      "unit": "string",
-      "reference_range": "string",
-      "status": "LOW | NORMAL | HIGH | UNKNOWN",
-      "date": "string",
-      "observation": "string",
-      "source": "uploaded report"
-    }}
-  ],
-  "conflicts": ["string"],
-  "summary": "string"
-}}
-
-Do not use markdown.
+SCHEMA:
+{{"tests":[{{"test_name":"string","value":"string","unit":"string","reference_range":"string","status":"LOW | NORMAL | HIGH | UNKNOWN","date":"string","observation":"string","source":"uploaded report"}}],"conflicts":["string"],"summary":"string"}}
 """
 
 
-    data_url=make_data_url(
-        file_bytes,
-        mime_type
-    )
+@app.post("/analyze")
+async def analyze(file: UploadFile = File(...), patient: str = Form("{}")):
+    api_key = os.getenv("OPENROUTER_API_KEY")
+    if not api_key:
+        return {"error": "OPENROUTER_API_KEY is not configured in Render."}
 
+    allowed_types = {"application/pdf", "image/jpeg", "image/png", "image/webp"}
+    mime_type = file.content_type or "application/octet-stream"
+    if mime_type not in allowed_types:
+        return {"error": "Unsupported file type. Please upload PDF, JPG, PNG, or WEBP."}
 
-    headers={
-        "Authorization":
-        f"Bearer {api_key}",
-
-        "Content-Type":
-        "application/json"
-    }
-
-
-    if mime_type=="application/pdf":
-
-        content=[
-
-            {
-                "type":"text",
-                "text":prompt
-            },
-
-            {
-                "type":"file",
-                "file":{
-
-                    "filename":
-                    file.filename or
-                    "medical_report.pdf",
-
-                    "file_data":
-                    data_url
-
-                }
-            }
-
-        ]
-
-    else:
-
-        content=[
-
-            {
-                "type":"text",
-                "text":prompt
-            },
-
-            {
-                "type":"image_url",
-                "image_url":{
-                    "url":data_url
-                }
-            }
-
-        ]
-
-
-    payload={
-
-        "model":
-        "minimax/minimax-m3:free",
-
-        "messages":[
-
-            {
-                "role":"user",
-                "content":content
-            }
-
-        ],
-
-        "temperature":0.1,
-
-        "max_tokens":2500
-
-    }
-
+    # Read once; reject oversized input before any AI work.
+    file_bytes = await file.read()
+    if len(file_bytes) > MAX_FILE_SIZE:
+        return {"error": "File is too large. Maximum allowed size is 8 MB."}
 
     try:
+        patient_data = json.loads(patient)
+        if not isinstance(patient_data, dict):
+            patient_data = {}
+    except (TypeError, ValueError):
+        patient_data = {}
 
-        response=requests.post(
+    # Keep user context bounded and remove empty fields to reduce prompt tokens.
+    patient_data = {
+        k: str(v)[:500]
+        for k, v in patient_data.items()
+        if v not in (None, "", [])
+    }
+    prompt = PROMPT_TEMPLATE.format(
+        patient=json.dumps(patient_data, ensure_ascii=False, separators=(",", ":"))
+    )
 
-            "https://openrouter.ai/api/v1/chat/completions",
+    data_url = make_data_url(file_bytes, mime_type)
+    if mime_type == "application/pdf":
+        content = [
+            {"type": "text", "text": prompt},
+            {"type": "file", "file": {
+                "filename": file.filename or "medical_report.pdf",
+                "file_data": data_url
+            }}
+        ]
+    else:
+        content = [
+            {"type": "text", "text": prompt},
+            {"type": "image_url", "image_url": {"url": data_url}}
+        ]
 
-            headers=headers,
+    payload = {
+        "model": MODEL,
+        "messages": [{"role": "user", "content": content}],
+        "temperature": 0.1,
+        "max_tokens": 1800
+    }
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
 
-            json=payload,
+    try:
+        # Async HTTP prevents the FastAPI worker from blocking while OpenRouter responds.
+        async with httpx.AsyncClient(timeout=75.0) as client:
+            response = await client.post(OPENROUTER_URL, headers=headers, json=payload)
 
-            timeout=90
+        if not response.is_success:
+            return {"error": f"OpenRouter API error {response.status_code}: {response.text[:800]}"}
 
-        )
-
-
-        if not response.ok:
-
-            return {
-
-                "error":
-                (
-                    f"OpenRouter API error "
-                    f"{response.status_code}: "
-                    f"{response.text[:1000]}"
-                )
-
-            }
-
-
-        result=response.json()
-
-        choices=result.get(
-            "choices",
-            []
-        )
-
-
+        result = response.json()
+        choices = result.get("choices") or []
         if not choices:
+            return {"error": "OpenRouter returned no model response."}
 
-            return {
-                "error":
-                "OpenRouter returned no model response."
-            }
-
-
-        message=choices[0].get(
-            "message",
-            {}
-        )
-
-
-        content=message.get(
-            "content",
-            ""
-        )
-
-
-        if isinstance(
-            content,
-            list
-        ):
-
-            parts=[]
-
-            for item in content:
-
-                if (
-                    isinstance(item,dict)
-                    and "text" in item
-                ):
-
-                    parts.append(
-                        str(item["text"])
-                    )
-
-                else:
-
-                    parts.append(
-                        str(item)
-                    )
-
-            content="".join(parts)
-
-
-        content=str(content)
-
-        cleaned=clean_json_text(
-            content
-        )
-
+        message = choices[0].get("message") or {}
+        content = message.get("content", "")
+        if isinstance(content, list):
+            content = "".join(
+                str(item.get("text", item)) if isinstance(item, dict) else str(item)
+                for item in content
+            )
 
         try:
+            parsed = json.loads(clean_json_text(content))
+        except (TypeError, ValueError):
+            return {"error": "The AI returned an unexpected format. Please try again."}
 
-            parsed=json.loads(
-                cleaned
-            )
+        return normalize_result(parsed)
 
-        except Exception:
-
-            return {
-
-                "error":
-                (
-                    "The AI returned an unexpected format. "
-                    f"Raw response: {content[:1000]}"
-                )
-
-            }
-
-
-        return normalize_result(
-            parsed
-        )
-
-
-    except requests.exceptions.Timeout:
-
-        return {
-            "error":
-            "OpenRouter request timed out. Please try again."
-        }
-
-
-    except requests.exceptions.RequestException as e:
-
-        return {
-
-            "error":
-            (
-                "Network error while contacting OpenRouter: "
-                f"{str(e)[:300]}"
-            )
-
-        }
-
-
+    except httpx.TimeoutException:
+        return {"error": "OpenRouter request timed out. Please try again."}
+    except httpx.RequestError as e:
+        return {"error": f"Network error while contacting OpenRouter: {str(e)[:200]}"}
     except Exception as e:
+        return {"error": f"AI processing failed: {type(e).__name__}: {str(e)[:200]}"}
 
-        return {
-
-            "error":
-            (
-                "AI processing failed: "
-                f"{type(e).__name__}: "
-                f"{str(e)[:300]}"
-            )
-
-        }
