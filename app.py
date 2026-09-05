@@ -2,7 +2,8 @@ import os
 import json
 import base64
 import re
-import httpx
+import asyncio
+import requests
 
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.responses import HTMLResponse
@@ -2126,11 +2127,16 @@ async def analyze(file: UploadFile = File(...), patient: str = Form("{}")):
     }
 
     try:
-        # Async HTTP prevents the FastAPI worker from blocking while OpenRouter responds.
-        async with httpx.AsyncClient(timeout=75.0) as client:
-            response = await client.post(OPENROUTER_URL, headers=headers, json=payload)
+        # Run the existing requests client off the event loop thread.
+        response = await asyncio.to_thread(
+            requests.post,
+            OPENROUTER_URL,
+            headers=headers,
+            json=payload,
+            timeout=75.0,
+        )
 
-        if not response.is_success:
+        if not response.ok:
             return {"error": f"OpenRouter API error {response.status_code}: {response.text[:800]}"}
 
         result = response.json()
@@ -2153,9 +2159,9 @@ async def analyze(file: UploadFile = File(...), patient: str = Form("{}")):
 
         return normalize_result(parsed)
 
-    except httpx.TimeoutException:
+    except requests.exceptions.Timeout:
         return {"error": "OpenRouter request timed out. Please try again."}
-    except httpx.RequestError as e:
+    except requests.exceptions.RequestException as e:
         return {"error": f"Network error while contacting OpenRouter: {str(e)[:200]}"}
     except Exception as e:
         return {"error": f"AI processing failed: {type(e).__name__}: {str(e)[:200]}"}
