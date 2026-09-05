@@ -253,11 +253,12 @@ button{
 /* WELCOME */
 
 .welcome{
- min-height:calc(100vh - 130px);
- display:flex;
- align-items:center;
- justify-content:center;
- text-align:center;
+  min-height:calc(100vh - 220px);
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  text-align:center;
+  padding-top:95px;
 }
 
 .welcome-inner{
