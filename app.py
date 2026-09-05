@@ -8,12 +8,12 @@ import requests
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.responses import HTMLResponse
 
+
 app = FastAPI(title="MedLens — AI Clinical Insight")
 
+
 HTML = """
-
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -446,6 +446,17 @@ button:focus-visible,
  outline-offset:3px;
 }
 
+@media (prefers-reduced-motion: reduce){
+ *,
+ *::before,
+ *::after{
+  animation-duration:0.01ms !important;
+  animation-iteration-count:1 !important;
+  transition-duration:0.01ms !important;
+  scroll-behavior:auto !important;
+ }
+}
+
 textarea{
  min-height:82px;
  resize:vertical;
@@ -552,7 +563,15 @@ select option{
 }
 
 #report{
- display:none;
+ position:absolute;
+ width:1px;
+ height:1px;
+ padding:0;
+ margin:-1px;
+ overflow:hidden;
+ clip:rect(0,0,0,0);
+ white-space:nowrap;
+ border:0;
 }
 
 .file-info{
@@ -564,6 +583,19 @@ select option{
  color:var(--lime);
  background:rgba(200,255,0,.035);
  font-size:10px;
+}
+
+.upload-error{
+ display:none;
+ margin-top:10px;
+ padding:11px 12px;
+ border-radius:10px;
+ border:1px solid rgba(255,65,109,.25);
+ border-left:3px solid var(--red);
+ color:#ff9caf;
+ background:rgba(255,65,109,.06);
+ font-size:10px;
+ line-height:1.5;
 }
 
 /* PROCESSING */
@@ -870,8 +902,8 @@ tr:hover td{
 
 }
 </style>
-
 </head>
+
 
 <body>
 
@@ -902,7 +934,8 @@ SYSTEM ONLINE
 
 </header>
 
-<div class="progress-area">
+
+<nav class="progress-area" aria-label="Analysis progress">
 
 <div class="progress" id="progress">
 
@@ -950,8 +983,12 @@ INSIGHTS
 
 </div>
 
+</nav>
+
+
 <!-- SCREEN 0 -->
 
+<main id="main-content">
 <section class="screen active welcome" id="screen0">
 
 <div class="welcome-inner">
@@ -975,6 +1012,7 @@ patient-friendly summaries.
 <button class="start-btn" onclick="goTo(1)">
 START ANALYSIS&nbsp;&nbsp; →
 </button>
+
 
 <div class="welcome-grid">
 
@@ -1002,6 +1040,7 @@ START ANALYSIS&nbsp;&nbsp; →
 
 </section>
 
+
 <!-- SCREEN 1 -->
 
 <section class="screen" id="screen1">
@@ -1012,6 +1051,7 @@ START ANALYSIS&nbsp;&nbsp; →
 <p>Provide whatever patient context is available.</p>
 </div>
 
+
 <div class="card">
 
 <div class="grid">
@@ -1021,6 +1061,7 @@ START ANALYSIS&nbsp;&nbsp; →
 <input id="age" type="number" min="0" max="150"
 placeholder="e.g. 21" autocomplete="off">
 </div>
+
 
 <div>
 <label for="sex">SEX</label>
@@ -1035,14 +1076,15 @@ placeholder="e.g. 21" autocomplete="off">
 
 </div>
 
+
 <div class="full">
 <label for="symptoms">SYMPTOMS</label>
 
 <textarea
 id="symptoms"
 placeholder="Enter patient-reported symptoms"></textarea>
-
 </div>
+
 
 <div>
 <label for="conditions">KNOWN CONDITIONS</label>
@@ -1050,8 +1092,8 @@ placeholder="Enter patient-reported symptoms"></textarea>
 <textarea
 id="conditions"
 placeholder="Existing conditions"></textarea>
-
 </div>
+
 
 <div>
 <label for="allergies">ALLERGIES</label>
@@ -1059,8 +1101,8 @@ placeholder="Existing conditions"></textarea>
 <textarea
 id="allergies"
 placeholder="Known allergies"></textarea>
-
 </div>
+
 
 <div class="full">
 <label for="medications">CURRENT MEDICATIONS</label>
@@ -1068,10 +1110,10 @@ placeholder="Known allergies"></textarea>
 <textarea
 id="medications"
 placeholder="Current medications"></textarea>
-
 </div>
 
 </div>
+
 
 <div class="next-row">
 
@@ -1089,6 +1131,7 @@ CONTINUE TO REPORT →
 
 </section>
 
+
 <!-- SCREEN 2 -->
 
 <section class="screen" id="screen2">
@@ -1098,6 +1141,7 @@ CONTINUE TO REPORT →
 <h2>Upload Medical Report</h2>
 <p>Give MedLens the original report to structure.</p>
 </div>
+
 
 <div class="card">
 
@@ -1116,6 +1160,7 @@ id="uploadZone"
 PDF · JPG · PNG · WEBP · Maximum 8 MB
 </p>
 
+
 <label for="report" class="file-label">
 CHOOSE REPORT
 </label>
@@ -1124,12 +1169,14 @@ CHOOSE REPORT
 id="report"
 type="file"
 accept=".pdf,.jpg,.jpeg,.png,.webp"
+>
 
 
-
-<div id="fileInfo" class="file-info"></div>
+<div id="fileInfo" class="file-info" role="status" aria-live="polite" aria-atomic="true"></div>
+<div id="uploadError" class="upload-error" role="alert" aria-live="assertive" aria-atomic="true"></div>
 
 </div>
+
 
 <div class="next-row">
 
@@ -1154,6 +1201,7 @@ aria-live="polite">
 
 </section>
 
+
 <!-- SCREEN 3 -->
 
 <section class="screen processing" id="screen3">
@@ -1167,6 +1215,7 @@ aria-live="polite">
 <p id="processingText">
 Initializing clinical information pipeline...
 </p>
+
 
 <div class="processing-steps">
 
@@ -1200,6 +1249,7 @@ STRUCTURE MEDICAL RECORD
 
 </section>
 
+
 <!-- SCREEN 4 -->
 
 <section class="screen" id="screen4">
@@ -1216,6 +1266,7 @@ STRUCTURE MEDICAL RECORD
 </div>
 
 </div>
+
 
 <div class="card">
 
@@ -1265,6 +1316,7 @@ VIEW INSIGHTS →
 
 </section>
 
+
 <!-- SCREEN 5 -->
 
 <section class="screen" id="screen5">
@@ -1281,7 +1333,9 @@ A simplified view of information found in the source report.
 
 </div>
 
+
 <div class="dashboard">
+
 
 <section class="card">
 
@@ -1298,6 +1352,7 @@ A simplified view of information found in the source report.
 <div class="summary" id="summary"></div>
 
 </section>
+
 
 <section class="card">
 
@@ -1317,6 +1372,7 @@ A simplified view of information found in the source report.
 
 </div>
 
+
 <section class="card" style="margin-top:18px">
 
 <div class="title">
@@ -1329,6 +1385,7 @@ A simplified view of information found in the source report.
 </div>
 
 </div>
+
 
 <div class="notice">
 
@@ -1352,6 +1409,7 @@ the original report by a qualified human before clinical use.
 
 </div>
 
+
 <div class="next-row">
 
 <button class="back-btn" onclick="goTo(4)">
@@ -1368,11 +1426,13 @@ START NEW ANALYSIS ↻
 
 </section>
 
+
 <div class="footer">
 <span>MedLens</span> · AI Clinical Information Intelligence · Human review required
 </div>
 
 </div>
+
 
 <script>
 
@@ -1477,6 +1537,25 @@ function statusBadge(status){
 const reportInput=document.getElementById("report");
 const uploadZone=document.getElementById("uploadZone");
 const fileInfo=document.getElementById("fileInfo");
+const uploadError=document.getElementById("uploadError");
+const fileLabel=document.querySelector('label[for="report"]');
+
+function showError(message){
+ uploadError.textContent="⚠️ "+message;
+ uploadError.style.display="block";
+}
+
+function clearError(){
+ uploadError.textContent="";
+ uploadError.style.display="none";
+}
+
+fileLabel.addEventListener("keydown",function(event){
+ if(event.key==="Enter" || event.key===" "){
+  event.preventDefault();
+  reportInput.click();
+ }
+});
 
 
 reportInput.addEventListener("change",function(){
@@ -1490,13 +1569,12 @@ reportInput.addEventListener("change",function(){
 
 function showFile(file){
 
+ clearError();
+
  if(file.size>8*1024*1024){
 
-  fileInfo.style.display="block";
-  fileInfo.style.color="#ff416d";
-  fileInfo.textContent=
-   "✕ File exceeds the 8 MB limit.";
-
+  fileInfo.style.display="none";
+  showError("File exceeds the 8 MB limit. Please choose a smaller report.");
   return;
  }
 
@@ -1680,10 +1758,11 @@ async function startAnalysis(){
 
   goTo(2);
 
-  alert(
+  showError(
    error.message ||
    "Unable to process report."
   );
+  document.querySelector('label[for="report"]').focus();
 
 
  }finally{
@@ -1856,6 +1935,7 @@ function newAnalysis(){
  analysisData=null;
 
  document.getElementById("report").value="";
+ clearError();
 
  document.getElementById("fileInfo").style.display="none";
 
@@ -1887,261 +1967,258 @@ function newAnalysis(){
 </html>
 """
 
+
 @app.get("/", response_class=HTMLResponse)
 async def home():
-return HTML
+    return HTML
+
 
 MAX_FILE_SIZE = 8 * 1024 * 1024
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
-MODEL = "minimax/minimax-m3"
+MODEL = "minimax/minimax-m3:free"
+
 
 def clean_json_text(text):
-text = str(text or "").strip()
-text = re.sub(r"^(?:json)?\s*|\s*$", "", text, flags=re.IGNORECASE)
-start, end = text.find("{"), text.rfind("}")
-return text[start + 1].strip() if start >= 0 and end > start else text
+    text = str(text or "").strip()
+    text = re.sub(r"^```(?:json)?\s*|\s*```$", "", text, flags=re.IGNORECASE)
+    start, end = text.find("{"), text.rfind("}")
+    return text[start:end + 1].strip() if start >= 0 and end > start else text
+
 
 def make_data_url(file_bytes, mime_type):
-return f"data:{mime_type};base64,{base64.b64encode(file_bytes).decode()}"
+    return f"data:{mime_type};base64,{base64.b64encode(file_bytes).decode()}"
+
 
 def _numbers(value):
-if value is None:
-return []
-found = re.findall(r"[-+]?(?:\d+(?:.\d*)?|.\d+)", str(value).replace(",", ""))
-return [float(x) for x in found]
+    if value is None:
+        return []
+    found = re.findall(r"[-+]?(?:\d+(?:\.\d*)?|\.\d+)", str(value).replace(",", ""))
+    return [float(x) for x in found]
+
 
 def _first_number(value):
-numbers = _numbers(value)
-return numbers[0] if numbers else None
+    numbers = _numbers(value)
+    return numbers[0] if numbers else None
+
 
 def classify_from_reference(value, reference):
-value_text = str(value or "").strip()
-ref_text = str(reference or "").strip()
-if not value_text or not ref_text:
-return "UNKNOWN"
-
-value_clean = value_text.lower().replace("*", "").strip()
-ref_clean = ref_text.lower().replace("*", "").strip()
-
-qualitative = {"negative", "none", "absent", "not detected", "not seen", "nil", "normal", "clear", "occasional"}
-if ref_clean in qualitative:
-    return "NORMAL" if value_clean == ref_clean else "HIGH"
-
-upper = re.fullmatch(r"(?:less than|<|<=)\s*([-+]?(?:\d+(?:\.\d*)?|\.\d+))", ref_clean)
-if upper:
-    actual = _first_number(value_clean)
-    if actual is None:
+    value_text = str(value or "").strip()
+    ref_text = str(reference or "").strip()
+    if not value_text or not ref_text:
         return "UNKNOWN"
-    limit = float(upper.group(1))
-    return ("NORMAL" if actual <= limit else "HIGH") if "<=" in ref_clean else ("NORMAL" if actual < limit else "HIGH")
 
-lower = re.fullmatch(r"(?:greater than|>|>=)\s*([-+]?(?:\d+(?:\.\d*)?|\.\d+))", ref_clean)
-if lower:
-    actual = _first_number(value_clean)
-    if actual is None:
-        return "UNKNOWN"
-    limit = float(lower.group(1))
-    return ("NORMAL" if actual >= limit else "LOW") if ">=" in ref_clean else ("NORMAL" if actual > limit else "LOW")
+    value_clean = value_text.lower().replace("*", "").strip()
+    ref_clean = ref_text.lower().replace("*", "").strip()
 
-# Require a recognizable range separator. This avoids treating values such
-# as "1.0-2.0" and malformed OCR ranges as arbitrary numeric ranges.
-if re.search(r"(?:-|–|—|to)" , ref_clean):
-    ref_numbers = _numbers(ref_clean)
-    if len(ref_numbers) >= 2:
-        low, high = sorted(ref_numbers[:2])
+    qualitative = {"negative", "none", "absent", "not detected", "not seen", "nil", "normal", "clear", "occasional"}
+    if ref_clean in qualitative:
+        return "NORMAL" if value_clean == ref_clean else "HIGH"
+
+    upper = re.fullmatch(r"(?:less than|<|<=)\s*([-+]?(?:\d+(?:\.\d*)?|\.\d+))", ref_clean)
+    if upper:
         actual = _first_number(value_clean)
         if actual is None:
             return "UNKNOWN"
-        if actual < low:
-            return "LOW"
-        if actual > high:
-            return "HIGH"
-        return "NORMAL"
+        limit = float(upper.group(1))
+        return ("NORMAL" if actual <= limit else "HIGH") if "<=" in ref_clean else ("NORMAL" if actual < limit else "HIGH")
 
-return "UNKNOWN"
+    lower = re.fullmatch(r"(?:greater than|>|>=)\s*([-+]?(?:\d+(?:\.\d*)?|\.\d+))", ref_clean)
+    if lower:
+        actual = _first_number(value_clean)
+        if actual is None:
+            return "UNKNOWN"
+        limit = float(lower.group(1))
+        return ("NORMAL" if actual >= limit else "LOW") if ">=" in ref_clean else ("NORMAL" if actual > limit else "LOW")
+
+    # Require a recognizable range separator. This avoids treating values such
+    # as "1.0-2.0" and malformed OCR ranges as arbitrary numeric ranges.
+    if re.search(r"(?:-|–|—|to)" , ref_clean):
+        ref_numbers = _numbers(ref_clean)
+        if len(ref_numbers) >= 2:
+            low, high = sorted(ref_numbers[:2])
+            actual = _first_number(value_clean)
+            if actual is None:
+                return "UNKNOWN"
+            if actual < low:
+                return "LOW"
+            if actual > high:
+                return "HIGH"
+            return "NORMAL"
+
+    return "UNKNOWN"
+
 
 def normalize_result(data):
-if not isinstance(data, dict):
-data = {}
+    if not isinstance(data, dict):
+        data = {}
 
-normalized_tests = []
-tests = data.get("tests", [])
-if not isinstance(tests, list):
-    tests = []
+    normalized_tests = []
+    tests = data.get("tests", [])
+    if not isinstance(tests, list):
+        tests = []
 
-for test in tests:
-    if not isinstance(test, dict):
-        continue
-    test_name = str(test.get("test_name", "")).strip()
-    value = str(test.get("value", "")).strip()
-    unit = str(test.get("unit", "")).strip()
-    reference_range = str(test.get("reference_range", "")).strip()
-    date = str(test.get("date", "")).strip()
-    observation = str(test.get("observation", "")).strip()
-    source = str(test.get("source", "uploaded report")).strip() or "uploaded report"
-    ai_status = str(test.get("status", "UNKNOWN")).upper().strip()
-    if ai_status not in {"LOW", "NORMAL", "HIGH", "UNKNOWN"}:
-        ai_status = "UNKNOWN"
+    for test in tests:
+        if not isinstance(test, dict):
+            continue
+        test_name = str(test.get("test_name", "")).strip()
+        value = str(test.get("value", "")).strip()
+        unit = str(test.get("unit", "")).strip()
+        reference_range = str(test.get("reference_range", "")).strip()
+        date = str(test.get("date", "")).strip()
+        observation = str(test.get("observation", "")).strip()
+        source = str(test.get("source", "uploaded report")).strip() or "uploaded report"
+        ai_status = str(test.get("status", "UNKNOWN")).upper().strip()
+        if ai_status not in {"LOW", "NORMAL", "HIGH", "UNKNOWN"}:
+            ai_status = "UNKNOWN"
 
-    calculated = classify_from_reference(value, reference_range)
-    status = calculated if calculated != "UNKNOWN" else ai_status
-    if not reference_range:
-        status = "UNKNOWN"
+        calculated = classify_from_reference(value, reference_range)
+        status = calculated if calculated != "UNKNOWN" else ai_status
+        if not reference_range:
+            status = "UNKNOWN"
 
-    normalized_tests.append({
-        "test_name": test_name,
-        "value": value,
-        "unit": unit,
-        "reference_range": reference_range,
-        "status": status,
-        "date": date,
-        "observation": observation,
-        "source": source
-    })
+        normalized_tests.append({
+            "test_name": test_name,
+            "value": value,
+            "unit": unit,
+            "reference_range": reference_range,
+            "status": status,
+            "date": date,
+            "observation": observation,
+            "source": source
+        })
 
-conflicts = data.get("conflicts", [])
-if not isinstance(conflicts, list):
-    conflicts = [str(conflicts)]
+    conflicts = data.get("conflicts", [])
+    if not isinstance(conflicts, list):
+        conflicts = [str(conflicts)]
 
-return {
-    "tests": normalized_tests,
-    "conflicts": [str(x) for x in conflicts],
-    "summary": str(data.get("summary", ""))
-}
+    return {
+        "tests": normalized_tests,
+        "conflicts": [str(x) for x in conflicts],
+        "summary": str(data.get("summary", ""))
+    }
 
-Compact prompt reduces input-token cost while retaining the safety contract.
 
+# Compact prompt reduces input-token cost while retaining the safety contract.
 PROMPT_TEMPLATE = """MedLens extraction engine. Read ONLY the uploaded medical report.
 Return ONLY valid JSON matching the schema below.
 
 PATIENT CONTEXT (may be empty): {patient}
 
 RULES:
-
-Extract tests, values, units, dates, observations and reference ranges ONLY from the report.
-
-Never invent, infer, or complete missing values, units, dates, ranges, or observations.
-
-Preserve source wording for values and reference ranges.
-
-Status LOW/NORMAL/HIGH only when the report provides a usable reference range; otherwise UNKNOWN.
-
-Numeric: below range=LOW, within= NORMAL, above=HIGH. For <X, above X=HIGH. For >X, below X=LOW.
-
-Qualitative comparisons (e.g. Negative/None/Absent) must be unambiguous; otherwise UNKNOWN.
-
-Do not use general medical knowledge to create ranges or interpretations.
-
-Do not diagnose, speculate, prescribe, recommend treatment, medication changes, or dosage changes.
-
-If the report itself states a diagnosis/interpretation, attribute it as “The report states…” or “The report mentions…”.
-
-Detect only obvious contradictions between patient-provided information and information explicitly present in the report.
-
-Missing optional patient fields are not conflicts.
-
-Keep the summary concise, factual and patient-friendly.
+- Extract tests, values, units, dates, observations and reference ranges ONLY from the report.
+- Never invent, infer, or complete missing values, units, dates, ranges, or observations.
+- Preserve source wording for values and reference ranges.
+- Status LOW/NORMAL/HIGH only when the report provides a usable reference range; otherwise UNKNOWN.
+- Numeric: below range=LOW, within= NORMAL, above=HIGH. For <X, above X=HIGH. For >X, below X=LOW.
+- Qualitative comparisons (e.g. Negative/None/Absent) must be unambiguous; otherwise UNKNOWN.
+- Do not use general medical knowledge to create ranges or interpretations.
+- Do not diagnose, speculate, prescribe, recommend treatment, medication changes, or dosage changes.
+- If the report itself states a diagnosis/interpretation, attribute it as “The report states…” or “The report mentions…”.
+- Detect only obvious contradictions between patient-provided information and information explicitly present in the report.
+- Missing optional patient fields are not conflicts.
+- Keep the summary concise, factual and patient-friendly.
 
 SCHEMA:
 {{"tests":[{{"test_name":"string","value":"string","unit":"string","reference_range":"string","status":"LOW | NORMAL | HIGH | UNKNOWN","date":"string","observation":"string","source":"uploaded report"}}],"conflicts":["string"],"summary":"string"}}
 """
 
+
 @app.post("/analyze")
 async def analyze(file: UploadFile = File(...), patient: str = Form("{}")):
-api_key = os.getenv("OPENROUTER_API_KEY")
-if not api_key:
-return {"error": "OPENROUTER_API_KEY is not configured in Render."}
+    api_key = os.getenv("OPENROUTER_API_KEY")
+    if not api_key:
+        return {"error": "OPENROUTER_API_KEY is not configured in Render."}
 
-allowed_types = {"application/pdf", "image/jpeg", "image/png", "image/webp"}
-mime_type = file.content_type or "application/octet-stream"
-if mime_type not in allowed_types:
-    return {"error": "Unsupported file type. Please upload PDF, JPG, PNG, or WEBP."}
+    allowed_types = {"application/pdf", "image/jpeg", "image/png", "image/webp"}
+    mime_type = file.content_type or "application/octet-stream"
+    if mime_type not in allowed_types:
+        return {"error": "Unsupported file type. Please upload PDF, JPG, PNG, or WEBP."}
 
-# Read once; reject oversized input before any AI work.
-file_bytes = await file.read()
-if len(file_bytes) > MAX_FILE_SIZE:
-    return {"error": "File is too large. Maximum allowed size is 8 MB."}
-
-try:
-    patient_data = json.loads(patient)
-    if not isinstance(patient_data, dict):
-        patient_data = {}
-except (TypeError, ValueError):
-    patient_data = {}
-
-# Keep user context bounded and remove empty fields to reduce prompt tokens.
-patient_data = {
-    k: str(v)[:500]
-    for k, v in patient_data.items()
-    if v not in (None, "", [])
-}
-prompt = PROMPT_TEMPLATE.format(
-    patient=json.dumps(patient_data, ensure_ascii=False, separators=(",", ":"))
-)
-
-data_url = make_data_url(file_bytes, mime_type)
-if mime_type == "application/pdf":
-    content = [
-        {"type": "text", "text": prompt},
-        {"type": "file", "file": {
-            "filename": file.filename or "medical_report.pdf",
-            "file_data": data_url
-        }}
-    ]
-else:
-    content = [
-        {"type": "text", "text": prompt},
-        {"type": "image_url", "image_url": {"url": data_url}}
-    ]
-
-payload = {
-    "model": MODEL,
-    "messages": [{"role": "user", "content": content}],
-    "temperature": 0.1,
-    "max_tokens": 1800
-}
-headers = {
-    "Authorization": f"Bearer {api_key}",
-    "Content-Type": "application/json"
-}
-
-try:
-    # Run the existing requests client off the event loop thread.
-    response = await asyncio.to_thread(
-        requests.post,
-        OPENROUTER_URL,
-        headers=headers,
-        json=payload,
-        timeout=75.0,
-    )
-
-    if not response.ok:
-        return {"error": f"OpenRouter API error {response.status_code}: {response.text[:800]}"}
-
-    result = response.json()
-    choices = result.get("choices") or []
-    if not choices:
-        return {"error": "OpenRouter returned no model response."}
-
-    message = choices[0].get("message") or {}
-    content = message.get("content", "")
-    if isinstance(content, list):
-        content = "".join(
-            str(item.get("text", item)) if isinstance(item, dict) else str(item)
-            for item in content
-        )
+    # Read once; reject oversized input before any AI work.
+    file_bytes = await file.read()
+    if len(file_bytes) > MAX_FILE_SIZE:
+        return {"error": "File is too large. Maximum allowed size is 8 MB."}
 
     try:
-        parsed = json.loads(clean_json_text(content))
+        patient_data = json.loads(patient)
+        if not isinstance(patient_data, dict):
+            patient_data = {}
     except (TypeError, ValueError):
-        return {"error": "The AI returned an unexpected format. Please try again."}
+        patient_data = {}
 
-    return normalize_result(parsed)
+    # Keep user context bounded and remove empty fields to reduce prompt tokens.
+    patient_data = {
+        k: str(v)[:500]
+        for k, v in patient_data.items()
+        if v not in (None, "", [])
+    }
+    prompt = PROMPT_TEMPLATE.format(
+        patient=json.dumps(patient_data, ensure_ascii=False, separators=(",", ":"))
+    )
 
-except requests.exceptions.Timeout:
-    return {"error": "OpenRouter request timed out. Please try again."}
-except requests.exceptions.RequestException as e:
-    return {"error": f"Network error while contacting OpenRouter: {str(e)[:200]}"}
-except Exception as e:
-    return {"error": f"AI processing failed: {type(e).__name__}: {str(e)[:200]}"}
+    data_url = make_data_url(file_bytes, mime_type)
+    if mime_type == "application/pdf":
+        content = [
+            {"type": "text", "text": prompt},
+            {"type": "file", "file": {
+                "filename": file.filename or "medical_report.pdf",
+                "file_data": data_url
+            }}
+        ]
+    else:
+        content = [
+            {"type": "text", "text": prompt},
+            {"type": "image_url", "image_url": {"url": data_url}}
+        ]
+
+    payload = {
+        "model": MODEL,
+        "messages": [{"role": "user", "content": content}],
+        "temperature": 0.1,
+        "max_tokens": 1800
+    }
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+
+    try:
+        # Run the existing requests client off the event loop thread.
+        response = await asyncio.to_thread(
+            requests.post,
+            OPENROUTER_URL,
+            headers=headers,
+            json=payload,
+            timeout=75.0,
+        )
+
+        if not response.ok:
+            return {"error": f"OpenRouter API error {response.status_code}: {response.text[:800]}"}
+
+        result = response.json()
+        choices = result.get("choices") or []
+        if not choices:
+            return {"error": "OpenRouter returned no model response."}
+
+        message = choices[0].get("message") or {}
+        content = message.get("content", "")
+        if isinstance(content, list):
+            content = "".join(
+                str(item.get("text", item)) if isinstance(item, dict) else str(item)
+                for item in content
+            )
+
+        try:
+            parsed = json.loads(clean_json_text(content))
+        except (TypeError, ValueError):
+            return {"error": "The AI returned an unexpected format. Please try again."}
+
+        return normalize_result(parsed)
+
+    except requests.exceptions.Timeout:
+        return {"error": "OpenRouter request timed out. Please try again."}
+    except requests.exceptions.RequestException as e:
+        return {"error": f"Network error while contacting OpenRouter: {str(e)[:200]}"}
+    except Exception as e:
+        return {"error": f"AI processing failed: {type(e).__name__}: {str(e)[:200]}"}
 
