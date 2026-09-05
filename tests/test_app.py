@@ -20,28 +20,25 @@ def test_make_data_url():
 
 def test_normalize_result_keeps_expected_structure():
     data = {
-        "patient": {"age": "25"},
-        "records": [],
+        "tests": [],
         "conflicts": [],
-        "summary": "Test summary",
-        "responsible_ai": "Human verification required."
+        "summary": "Test summary"
     }
 
     result = normalize_result(data)
 
     assert isinstance(result, dict)
-    assert "patient" in result
-    assert "records" in result
+    assert "tests" in result
     assert "conflicts" in result
     assert "summary" in result
-    assert "responsible_ai" in result
 
 
 def test_normalize_result_defaults_missing_sections():
     result = normalize_result({})
 
     assert isinstance(result, dict)
-    assert "records" in result
+    assert "tests" in result
     assert "conflicts" in result
-    assert isinstance(result["records"], list)
+    assert "summary" in result
+    assert isinstance(result["tests"], list)
     assert isinstance(result["conflicts"], list)
