@@ -446,6 +446,17 @@ button:focus-visible,
  outline-offset:3px;
 }
 
+@media (prefers-reduced-motion: reduce){
+ *,
+ *::before,
+ *::after{
+  animation-duration:0.01ms !important;
+  animation-iteration-count:1 !important;
+  transition-duration:0.01ms !important;
+  scroll-behavior:auto !important;
+ }
+}
+
 textarea{
  min-height:82px;
  resize:vertical;
@@ -552,7 +563,15 @@ select option{
 }
 
 #report{
- display:none;
+ position:absolute;
+ width:1px;
+ height:1px;
+ padding:0;
+ margin:-1px;
+ overflow:hidden;
+ clip:rect(0,0,0,0);
+ white-space:nowrap;
+ border:0;
 }
 
 .file-info{
@@ -564,6 +583,19 @@ select option{
  color:var(--lime);
  background:rgba(200,255,0,.035);
  font-size:10px;
+}
+
+.upload-error{
+ display:none;
+ margin-top:10px;
+ padding:11px 12px;
+ border-radius:10px;
+ border:1px solid rgba(255,65,109,.25);
+ border-left:3px solid var(--red);
+ color:#ff9caf;
+ background:rgba(255,65,109,.06);
+ font-size:10px;
+ line-height:1.5;
 }
 
 /* PROCESSING */
@@ -903,7 +935,7 @@ SYSTEM ONLINE
 </header>
 
 
-<div class="progress-area">
+<nav class="progress-area" aria-label="Analysis progress">
 
 <div class="progress" id="progress">
 
@@ -951,9 +983,12 @@ INSIGHTS
 
 </div>
 
+</nav>
+
 
 <!-- SCREEN 0 -->
 
+<main id="main-content">
 <section class="screen active welcome" id="screen0">
 
 <div class="welcome-inner">
@@ -1137,7 +1172,8 @@ accept=".pdf,.jpg,.jpeg,.png,.webp"
 >
 
 
-<div id="fileInfo" class="file-info"></div>
+<div id="fileInfo" class="file-info" role="status" aria-live="polite" aria-atomic="true"></div>
+<div id="uploadError" class="upload-error" role="alert" aria-live="assertive" aria-atomic="true"></div>
 
 </div>
 
@@ -1501,6 +1537,25 @@ function statusBadge(status){
 const reportInput=document.getElementById("report");
 const uploadZone=document.getElementById("uploadZone");
 const fileInfo=document.getElementById("fileInfo");
+const uploadError=document.getElementById("uploadError");
+const fileLabel=document.querySelector('label[for="report"]');
+
+function showError(message){
+ uploadError.textContent="⚠️ "+message;
+ uploadError.style.display="block";
+}
+
+function clearError(){
+ uploadError.textContent="";
+ uploadError.style.display="none";
+}
+
+fileLabel.addEventListener("keydown",function(event){
+ if(event.key==="Enter" || event.key===" "){
+  event.preventDefault();
+  reportInput.click();
+ }
+});
 
 
 reportInput.addEventListener("change",function(){
@@ -1514,13 +1569,12 @@ reportInput.addEventListener("change",function(){
 
 function showFile(file){
 
+ clearError();
+
  if(file.size>8*1024*1024){
 
-  fileInfo.style.display="block";
-  fileInfo.style.color="#ff416d";
-  fileInfo.textContent=
-   "✕ File exceeds the 8 MB limit.";
-
+  fileInfo.style.display="none";
+  showError("File exceeds the 8 MB limit. Please choose a smaller report.");
   return;
  }
 
@@ -1704,10 +1758,11 @@ async function startAnalysis(){
 
   goTo(2);
 
-  alert(
+  showError(
    error.message ||
    "Unable to process report."
   );
+  document.querySelector('label[for="report"]').focus();
 
 
  }finally{
@@ -1880,6 +1935,7 @@ function newAnalysis(){
  analysisData=null;
 
  document.getElementById("report").value="";
+ clearError();
 
  document.getElementById("fileInfo").style.display="none";
 
